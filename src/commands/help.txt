@@ -1,3 +1,0 @@
-  // devOnly: Boolean,
-  // testOnly: Boolean,
-  // options: Object[],

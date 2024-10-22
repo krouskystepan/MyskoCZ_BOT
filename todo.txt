@@ -1,0 +1,3 @@
+ready event= guild setup auto
+
+random cmd = no negative numbers
