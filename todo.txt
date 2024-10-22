@@ -1,3 +1,12 @@
 ready event= guild setup auto
 
 random cmd = no negative numbers
+
+Interaction can be used within servers
+Guild = 0,
+
+Interaction can be used within DMs with the app's bot user
+BotDM = 1,
+
+Interaction can be used within Group DMs and DMs other than the app's bot user
+PrivateChannel = 2

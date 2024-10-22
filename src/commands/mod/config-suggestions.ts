@@ -1,18 +1,16 @@
 import {
   ApplicationCommandOptionType,
   ChannelType,
-  Client,
-  CommandInteraction,
   CommandInteractionOptionResolver,
-  PermissionFlagsBits,
 } from 'discord.js'
 import GuildConfiguration from '../../models/GuildConfiguration'
 import Suggestion from '../../models/Suggestion'
+import { CommandData, CommandOptions, SlashCommandProps } from 'commandkit'
 
-export default {
+export const data: CommandData = {
   name: 'config-suggestions',
   description: 'Nastav konfiguraci serveru pro návrhy',
-  dm_permissions: false,
+  contexts: [0],
   options: [
     {
       name: 'add',
@@ -32,6 +30,7 @@ export default {
       name: 'remove',
       description: 'Odebrání kanálu pro návrhy',
       type: ApplicationCommandOptionType.Subcommand,
+
       options: [
         {
           name: 'channel',
@@ -61,138 +60,140 @@ export default {
       ],
     },
   ],
-  permissionsRequired: [PermissionFlagsBits.Administrator],
-  botPermissions: [PermissionFlagsBits.Administrator],
+}
 
-  callback: async (client: Client, interaction: CommandInteraction) => {
-    let guildConfiguration = await GuildConfiguration.findOne({
+export const options: CommandOptions = {
+  userPermissions: ['Administrator'],
+  botPermissions: ['Administrator'],
+  deleted: false,
+}
+
+export async function run({ interaction, client, handler }: SlashCommandProps) {
+  let guildConfiguration = await GuildConfiguration.findOne({
+    guildId: interaction.guildId,
+  })
+
+  if (!guildConfiguration) {
+    guildConfiguration = new GuildConfiguration({
       guildId: interaction.guildId,
     })
+  }
 
-    if (!guildConfiguration) {
-      guildConfiguration = new GuildConfiguration({
-        guildId: interaction.guildId,
+  const options = interaction.options as CommandInteractionOptionResolver
+
+  const subcommand = options.getSubcommand()
+
+  if (subcommand === 'add') {
+    const channel = options.getChannel('channel')
+
+    if (!channel) {
+      return interaction.reply({
+        content: 'Něco se pokazilo',
       })
     }
 
-    const options = interaction.options as CommandInteractionOptionResolver
-
-    const subcommand = options.getSubcommand()
-
-    if (subcommand === 'add') {
-      const channel = options.getChannel('channel')
-
-      if (!channel) {
-        return interaction.reply({
-          content: 'Něco se pokazilo',
-        })
-      }
-
-      if (guildConfiguration.suggestionChannelIds.includes(channel.id)) {
-        return await interaction.reply(
-          `Kanál ${channel} už je nastavený pro návrhy`
-        )
-      }
-
-      guildConfiguration.suggestionChannelIds.push(channel.id)
-      await guildConfiguration.save()
-
+    if (guildConfiguration.suggestionChannelIds.includes(channel.id)) {
       return await interaction.reply(
-        `Kanál ${channel} byl úspěšně přidán pro návrhy`
+        `Kanál ${channel} už je nastavený pro návrhy`
       )
     }
 
-    if (subcommand === 'remove') {
-      const channel = options.getChannel('channel')
+    guildConfiguration.suggestionChannelIds.push(channel.id)
+    await guildConfiguration.save()
 
-      if (!channel) {
-        return interaction.reply({
-          content: 'Něco se pokazilo',
-        })
-      }
+    return await interaction.reply(
+      `Kanál ${channel} byl úspěšně přidán pro návrhy`
+    )
+  }
 
-      if (!guildConfiguration.suggestionChannelIds.includes(channel.id)) {
-        return await interaction.reply(
-          `Kanál ${channel} není nastavený pro návrhy`
-        )
-      }
+  if (subcommand === 'remove') {
+    const channel = options.getChannel('channel')
 
-      guildConfiguration.suggestionChannelIds =
-        guildConfiguration.suggestionChannelIds.filter(
-          (id) => id !== channel.id
-        )
+    if (!channel) {
+      return interaction.reply({
+        content: 'Něco se pokazilo',
+      })
+    }
 
-      await guildConfiguration.save()
-
+    if (!guildConfiguration.suggestionChannelIds.includes(channel.id)) {
       return await interaction.reply(
-        `Kanál ${channel} byl úspěšně odebrán z návrhů`
+        `Kanál ${channel} není nastavený pro návrhy`
       )
     }
 
-    if (subcommand === 'channels') {
-      const channels = guildConfiguration.suggestionChannelIds.map(
-        (id) => `<#${id}>`
-      )
+    guildConfiguration.suggestionChannelIds =
+      guildConfiguration.suggestionChannelIds.filter((id) => id !== channel.id)
 
+    await guildConfiguration.save()
+
+    return await interaction.reply(
+      `Kanál ${channel} byl úspěšně odebrán z návrhů`
+    )
+  }
+
+  if (subcommand === 'channels') {
+    const channels = guildConfiguration.suggestionChannelIds.map(
+      (id) => `<#${id}>`
+    )
+
+    return await interaction.reply({
+      content: `Kanály pro návrhy: ${channels.join(', ')}`,
+    })
+  }
+
+  if (subcommand === 'check') {
+    const id = options.getString('id')
+
+    const suggestion = await Suggestion.findOne({
+      messageId: id,
+    })
+
+    if (!suggestion) {
       return await interaction.reply({
-        content: `Kanály pro návrhy: ${channels.join(', ')}`,
+        content: 'Návrh nebyl nalezen',
+        ephemeral: true,
       })
     }
 
-    if (subcommand === 'check') {
-      const id = options.getString('id')
+    const guild = interaction.guild
 
-      const suggestion = await Suggestion.findOne({
-        messageId: id,
-      })
-
-      if (!suggestion) {
-        return await interaction.reply({
-          content: 'Návrh nebyl nalezen',
-          ephemeral: true,
-        })
-      }
-
-      const guild = interaction.guild
-
-      if (!guild) {
-        return await interaction.reply({
-          content: 'Tento příkaz lze použít pouze na serveru.',
-          ephemeral: true,
-        })
-      }
-
-      const upvoteUsers = await Promise.all(
-        suggestion.upvotes.map(async (userId) => {
-          const member = await guild.members.fetch(userId)
-
-          if (member.nickname) {
-            return `${member.nickname} (${member.user.username})`
-          }
-
-          return member.user.username
-        })
-      )
-
-      const downvoteUsers = await Promise.all(
-        suggestion.downvotes.map(async (userId) => {
-          const member = await guild.members.fetch(userId)
-
-          if (member.nickname) {
-            return `${member.nickname} (${member.user.username})`
-          }
-
-          return member.user.username
-        })
-      )
-
+    if (!guild) {
       return await interaction.reply({
-        content: `
-    Hlasování pro návrh \`${suggestion.content}\`: 
-    \n👍 - ${upvoteUsers.join(', ')}
-    \n👎 - ${downvoteUsers.join(', ')}
-  `,
+        content: 'Tento příkaz lze použít pouze na serveru.',
+        ephemeral: true,
       })
     }
-  },
+
+    const upvoteUsers = await Promise.all(
+      suggestion.upvotes.map(async (userId) => {
+        const member = await guild.members.fetch(userId)
+
+        if (member.nickname) {
+          return `${member.nickname} (${member.user.username})`
+        }
+
+        return member.user.username
+      })
+    )
+
+    const downvoteUsers = await Promise.all(
+      suggestion.downvotes.map(async (userId) => {
+        const member = await guild.members.fetch(userId)
+
+        if (member.nickname) {
+          return `${member.nickname} (${member.user.username})`
+        }
+
+        return member.user.username
+      })
+    )
+
+    return await interaction.reply({
+      content: `
+  Hlasování pro návrh \`${suggestion.content}\`: 
+  \n👍 - ${upvoteUsers.join(', ')}
+  \n👎 - ${downvoteUsers.join(', ')}
+`,
+    })
+  }
 }

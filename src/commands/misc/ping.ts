@@ -1,22 +1,22 @@
-import { Client, CommandInteraction } from 'discord.js'
+import type { CommandData, SlashCommandProps, CommandOptions } from 'commandkit'
 
-export default {
+export const data: CommandData = {
   name: 'ping',
   description: 'Odpoví s latencí bota a websocketu',
-  // devOnly: Boolean,
-  // testOnly: Boolean,
-  // options: Object[],
-  // deleted: true,
+}
 
-  callback: async (client: Client, interaction: CommandInteraction) => {
-    await interaction.deferReply()
+export const options: CommandOptions = {
+  deleted: false,
+}
 
-    const reply = await interaction.fetchReply()
+export async function run({ interaction, client, handler }: SlashCommandProps) {
+  await interaction.deferReply()
 
-    const ping = reply.createdTimestamp - interaction.createdTimestamp
+  const reply = await interaction.fetchReply()
 
-    interaction.editReply(
-      `🏓 Pong! \n **・** Klient: \`${ping}ms\` \n **・** Websocket: \`${client.ws.ping}ms\``
-    )
-  },
+  const ping = reply.createdTimestamp - interaction.createdTimestamp
+
+  interaction.editReply(
+    `🏓 Pong! \n **・** Klient: \`${ping}ms\` \n **・** Websocket: \`${client.ws.ping}ms\``
+  )
 }

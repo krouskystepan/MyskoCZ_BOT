@@ -1,7 +1,8 @@
 import 'dotenv/config'
 import { Client } from 'discord.js'
-import { eventHandlers } from './handlers/eventHandlers'
 import { connectToDatabase } from './utils/utils'
+import { CommandKit } from 'commandkit'
+import * as path from 'path'
 
 const client = new Client({
   intents: ['Guilds', 'GuildMembers', 'GuildMessages', 'MessageContent'],
@@ -9,7 +10,17 @@ const client = new Client({
 
 async function startApp(client: Client) {
   await connectToDatabase()
-  eventHandlers(client)
+
+  new CommandKit({
+    client,
+    commandsPath: path.join(__dirname, 'commands'),
+    eventsPath: path.join(__dirname, 'events'),
+    // validationsPath: path.join(__dirname, 'validations'),
+    // devGuildIds: [],
+    // devUserIds: [],
+    // devRoleIds: [],
+    bulkRegister: true,
+  })
 }
 
 startApp(client)

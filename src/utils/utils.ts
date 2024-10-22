@@ -1,8 +1,3 @@
-import {
-  CommandInteraction,
-  Message,
-  OmitPartialGroupDMChannel,
-} from 'discord.js'
 import mongoose from 'mongoose'
 
 export const connectToDatabase = async () => {
@@ -13,20 +8,5 @@ export const connectToDatabase = async () => {
     console.log('✅ Connected to the database')
   } catch (error) {
     console.error('Error connecting to the database:', error)
-  }
-}
-
-export const checkChannel = (
-  interaction: CommandInteraction | OmitPartialGroupDMChannel<Message<boolean>>,
-  channel: {
-    id: string
-    error: string
-  }
-) => {
-  if (interaction.channelId !== channel.id) {
-    return interaction.reply({
-      content: channel.error,
-      ephemeral: true,
-    })
   }
 }

@@ -1,8 +1,8 @@
-import { Client } from 'discord.js'
+import { Client, Interaction } from 'discord.js'
 import Suggestion from '../../models/Suggestion'
 import { formatResults } from '../../utils/formatResult'
 
-const handleSuggestions = async (client: Client, interaction: any) => {
+const handleSuggestions = async (interaction: Interaction) => {
   if (!interaction.isButton() || !interaction.customId) return
 
   try {
@@ -19,7 +19,13 @@ const handleSuggestions = async (client: Client, interaction: any) => {
       suggestionId,
     })
 
-    if (!targetSuggestion) return
+    if (
+      !targetSuggestion ||
+      !interaction.channel ||
+      !interaction.memberPermissions
+    ) {
+      return
+    }
 
     const targetMessage = await interaction.channel.messages.fetch(
       targetSuggestion.messageId
@@ -35,7 +41,7 @@ const handleSuggestions = async (client: Client, interaction: any) => {
       }
 
       targetSuggestion.status = 'approved'
-      targetMessageEmbed.data.color = 0x84e660
+      ;(targetMessageEmbed as any).color = 0x84e660
       targetMessageEmbed.fields[1].value = '✅ Schváleno'
 
       await targetSuggestion.save()
@@ -56,7 +62,7 @@ const handleSuggestions = async (client: Client, interaction: any) => {
       }
 
       targetSuggestion.status = 'reject'
-      targetMessageEmbed.data.color = 0xff6161
+      ;(targetMessageEmbed as any).data.color = 0xff6161
       targetMessageEmbed.fields[1].value = '❌ Zamítnuto'
 
       await targetSuggestion.save()
