@@ -1,4 +1,6 @@
 import mongoose from 'mongoose'
+import GuildConfiguration from '../models/GuildConfiguration'
+import { Document } from 'mongoose'
 
 export const connectToDatabase = async () => {
   try {
@@ -9,4 +11,18 @@ export const connectToDatabase = async () => {
   } catch (error) {
     console.error('Error connecting to the database:', error)
   }
+}
+
+export const checkGuildConfiguration = async (guildId: string) => {
+  let guildConfiguration = await GuildConfiguration.findOne({
+    guildId,
+  })
+
+  if (!guildConfiguration) {
+    guildConfiguration = new GuildConfiguration({
+      guildId,
+    })
+  }
+
+  return guildConfiguration
 }

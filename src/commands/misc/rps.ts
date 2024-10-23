@@ -7,8 +7,7 @@ import {
   EmbedBuilder,
 } from 'discord.js'
 import { CommandData, CommandOptions, SlashCommandProps } from 'commandkit'
-
-import { channels } from '../../../config.json'
+import GuildConfiguration from '../../models/GuildConfiguration'
 
 const choices = [
   {
@@ -44,10 +43,26 @@ export const options: CommandOptions = {
 
 export async function run({ interaction, client, handler }: SlashCommandProps) {
   try {
-    if (interaction.channelId !== '1297661219007758356')
-      return interaction.reply(
-        'Tento příkaz můžeš použít pouze v kanálu <#1297661219007758356>!'
-      )
+    const guildConfiguration = await GuildConfiguration.findOne({
+      guildId: interaction.guildId,
+    })
+
+    if (!guildConfiguration?.gameChannelIds.length) {
+      return await interaction.reply({
+        content:
+          'Tento server nebyl ještě nastaven pro používání příkazu `/rps`. Kontaktujte prosím administrátory serveru.',
+        ephemeral: true,
+      })
+    }
+
+    if (!guildConfiguration.gameChannelIds.includes(interaction.channelId)) {
+      return await interaction.reply({
+        content: `Tento kanál není nastaven pro používání příkazu \`/rps\`. Zkuste jeden z těchto kanálů: ${guildConfiguration.gameChannelIds
+          .map((id) => `<#${id}>`)
+          .join(', ')}`,
+        ephemeral: true,
+      })
+    }
 
     const targetUser = (
       interaction.options as CommandInteractionOptionResolver

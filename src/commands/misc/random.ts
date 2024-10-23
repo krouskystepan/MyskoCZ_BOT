@@ -1,7 +1,6 @@
 import { ApplicationCommandOptionType } from 'discord.js'
 import type { CommandData, SlashCommandProps, CommandOptions } from 'commandkit'
-
-import { channels } from '../../../config.json'
+import GuildConfiguration from '../../models/GuildConfiguration'
 
 export const data: CommandData = {
   name: 'random',
@@ -21,11 +20,26 @@ export const options: CommandOptions = {
 }
 
 export async function run({ interaction, client, handler }: SlashCommandProps) {
-  // TODO: Get this from DB
-  if (interaction.channelId !== '1297661219007758356')
-    return interaction.reply(
-      'Tento příkaz můžeš použít pouze v kanálu <#1297661219007758356>!'
-    )
+  const guildConfiguration = await GuildConfiguration.findOne({
+    guildId: interaction.guildId,
+  })
+
+  if (!guildConfiguration?.gameChannelIds.length) {
+    return await interaction.reply({
+      content:
+        'Tento server nebyl ještě nastaven pro používání příkazu `/random`. Kontaktujte prosím administrátory serveru.',
+      ephemeral: true,
+    })
+  }
+
+  if (!guildConfiguration.gameChannelIds.includes(interaction.channelId)) {
+    return await interaction.reply({
+      content: `Tento kanál není nastaven pro používání příkazu \`/random\`. Zkuste jeden z těchto kanálů: ${guildConfiguration.gameChannelIds
+        .map((id) => `<#${id}>`)
+        .join(', ')}`,
+      ephemeral: true,
+    })
+  }
 
   const maxNumber = Number(interaction.options.get('počet', true)?.value)
 

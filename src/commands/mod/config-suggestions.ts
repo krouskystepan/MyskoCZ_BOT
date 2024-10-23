@@ -3,9 +3,9 @@ import {
   ChannelType,
   CommandInteractionOptionResolver,
 } from 'discord.js'
-import GuildConfiguration from '../../models/GuildConfiguration'
 import Suggestion from '../../models/Suggestion'
 import { CommandData, CommandOptions, SlashCommandProps } from 'commandkit'
+import { checkGuildConfiguration } from '../../utils/utils'
 
 export const data: CommandData = {
   name: 'config-suggestions',
@@ -69,15 +69,13 @@ export const options: CommandOptions = {
 }
 
 export async function run({ interaction, client, handler }: SlashCommandProps) {
-  let guildConfiguration = await GuildConfiguration.findOne({
-    guildId: interaction.guildId,
-  })
-
-  if (!guildConfiguration) {
-    guildConfiguration = new GuildConfiguration({
-      guildId: interaction.guildId,
+  if (!interaction.guildId) {
+    return interaction.reply({
+      content: 'Něco se pokokazilo',
     })
   }
+
+  const guildConfiguration = await checkGuildConfiguration(interaction.guildId)
 
   const options = interaction.options as CommandInteractionOptionResolver
 

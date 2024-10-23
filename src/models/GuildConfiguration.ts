@@ -9,6 +9,10 @@ const guildConfiguration = new Schema({
     type: [String],
     default: [],
   },
+  gameChannelIds: {
+    type: [String],
+    default: [],
+  },
 })
 
 export default model('GuildConfiguration', guildConfiguration)
