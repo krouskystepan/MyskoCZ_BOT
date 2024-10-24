@@ -77,7 +77,7 @@ export const data: CommandData = {
 export const options: CommandOptions = {
   userPermissions: ['Administrator'],
   botPermissions: ['Administrator'],
-  deleted: true,
+  deleted: false,
 }
 
 export async function run({ interaction, client, handler }: SlashCommandProps) {

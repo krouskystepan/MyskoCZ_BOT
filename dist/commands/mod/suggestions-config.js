@@ -74,7 +74,7 @@ exports.data = {
 exports.options = {
     userPermissions: ['Administrator'],
     botPermissions: ['Administrator'],
-    deleted: true,
+    deleted: false,
 };
 async function run({ interaction, client, handler }) {
     if (!interaction.guildId) {
