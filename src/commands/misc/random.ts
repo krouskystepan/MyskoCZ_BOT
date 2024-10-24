@@ -36,7 +36,7 @@ export async function run({ interaction, client, handler }: SlashCommandProps) {
     return await interaction.reply({
       content: `Tento kanál není nastaven pro používání příkazu \`/random\`. Zkuste jeden z těchto kanálů: ${guildConfiguration.gameChannelIds
         .map((id) => `<#${id}>`)
-        .join(', ')}`,
+        .join(', ')}.`,
       ephemeral: true,
     })
   }

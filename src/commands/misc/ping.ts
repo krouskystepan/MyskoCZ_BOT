@@ -2,7 +2,7 @@ import type { CommandData, SlashCommandProps, CommandOptions } from 'commandkit'
 
 export const data: CommandData = {
   name: 'ping',
-  description: 'Odpoví s latencí bota a websocketu',
+  description: 'Odpoví s latencí bota a websocketu.',
 }
 
 export const options: CommandOptions = {

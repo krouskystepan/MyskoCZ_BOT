@@ -44,20 +44,20 @@ export async function run({ interaction, client, handler }: SlashCommandProps) {
       return await interaction.reply({
         content: `Tento kanál není nastaven pro používání příkazu \`/navrh\`. Zkuste jeden z těchto kanálů: ${guildConfiguration.suggestionChannelIds
           .map((id) => `<#${id}>`)
-          .join(', ')}`,
+          .join(', ')}.`,
         ephemeral: true,
       })
     }
 
     const modal = new ModalBuilder()
-      .setTitle('Navrhni něco')
+      .setTitle('Navrhni něco.')
       .setCustomId(`suggestion-${interaction.user.id}`)
 
     const textInputs = new TextInputBuilder()
       .setCustomId('suggestion-input')
       .setLabel('Co by jsi chtěl navrhnout?')
       .setStyle(TextInputStyle.Paragraph)
-      .setPlaceholder('Napište návrh')
+      .setPlaceholder('Napište návrh.')
       .setRequired(true)
       .setMaxLength(1000)
 

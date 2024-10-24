@@ -9,17 +9,17 @@ import { checkGuildConfiguration } from '../../utils/utils'
 
 export const data: CommandData = {
   name: 'config-suggestions',
-  description: 'Nastav konfiguraci serveru pro návrhy',
+  description: 'Nastav konfiguraci serveru pro návrhy.',
   contexts: [0],
   options: [
     {
       name: 'add',
-      description: 'Přídání kanálu pro návrhy',
+      description: 'Přídání kanálu pro návrhy.',
       type: ApplicationCommandOptionType.Subcommand,
       options: [
         {
           name: 'channel',
-          description: 'Kanál pro návrhy',
+          description: 'Kanál pro návrhy.',
           type: ApplicationCommandOptionType.Channel,
           channel_types: [ChannelType.GuildText],
           required: true,
@@ -28,13 +28,13 @@ export const data: CommandData = {
     },
     {
       name: 'remove',
-      description: 'Odebrání kanálu pro návrhy',
+      description: 'Odebrání kanálu pro návrhy.',
       type: ApplicationCommandOptionType.Subcommand,
 
       options: [
         {
           name: 'channel',
-          description: 'Kanál pro návrhy',
+          description: 'Kanál pro návrhy.',
           type: ApplicationCommandOptionType.Channel,
           channel_types: [ChannelType.GuildText],
           required: true,
@@ -43,17 +43,17 @@ export const data: CommandData = {
     },
     {
       name: 'channels',
-      description: 'Zobrazí kanály pro návrhy',
+      description: 'Zobrazí kanály pro návrhy.',
       type: ApplicationCommandOptionType.Subcommand,
     },
     {
       name: 'check',
-      description: 'Vypíše, kdo jak hlasoval pro daný návrh',
+      description: 'Vypíše, kdo jak hlasoval pro daný návrh.',
       type: ApplicationCommandOptionType.Subcommand,
       options: [
         {
           name: 'id',
-          description: 'ID návrhu',
+          description: 'ID návrhu.',
           type: ApplicationCommandOptionType.String,
           required: true,
         },
@@ -71,7 +71,7 @@ export const options: CommandOptions = {
 export async function run({ interaction, client, handler }: SlashCommandProps) {
   if (!interaction.guildId) {
     return interaction.reply({
-      content: 'Něco se pokokazilo',
+      content: 'Něco se pokokazilo.',
     })
   }
 
@@ -86,13 +86,13 @@ export async function run({ interaction, client, handler }: SlashCommandProps) {
 
     if (!channel) {
       return interaction.reply({
-        content: 'Něco se pokazilo',
+        content: 'Něco se pokazilo.',
       })
     }
 
     if (guildConfiguration.suggestionChannelIds.includes(channel.id)) {
       return await interaction.reply(
-        `Kanál ${channel} už je nastavený pro návrhy`
+        `Kanál ${channel} už je nastavený pro návrhy.`
       )
     }
 
@@ -100,7 +100,7 @@ export async function run({ interaction, client, handler }: SlashCommandProps) {
     await guildConfiguration.save()
 
     return await interaction.reply(
-      `Kanál ${channel} byl úspěšně přidán pro návrhy`
+      `Kanál ${channel} byl úspěšně přidán pro návrhy.`
     )
   }
 
@@ -109,13 +109,13 @@ export async function run({ interaction, client, handler }: SlashCommandProps) {
 
     if (!channel) {
       return interaction.reply({
-        content: 'Něco se pokazilo',
+        content: 'Něco se pokazilo.',
       })
     }
 
     if (!guildConfiguration.suggestionChannelIds.includes(channel.id)) {
       return await interaction.reply(
-        `Kanál ${channel} není nastavený pro návrhy`
+        `Kanál ${channel} není nastavený pro návrhy.`
       )
     }
 
@@ -125,7 +125,7 @@ export async function run({ interaction, client, handler }: SlashCommandProps) {
     await guildConfiguration.save()
 
     return await interaction.reply(
-      `Kanál ${channel} byl úspěšně odebrán z návrhů`
+      `Kanál ${channel} byl úspěšně odebrán z návrhů.`
     )
   }
 
@@ -135,7 +135,7 @@ export async function run({ interaction, client, handler }: SlashCommandProps) {
     )
 
     return await interaction.reply({
-      content: `Kanály pro návrhy: ${channels.join(', ')}`,
+      content: `Kanály pro návrhy: ${channels.join(', ')}.`,
     })
   }
 
@@ -148,7 +148,7 @@ export async function run({ interaction, client, handler }: SlashCommandProps) {
 
     if (!suggestion) {
       return await interaction.reply({
-        content: 'Návrh nebyl nalezen',
+        content: 'Návrh nebyl nalezen.',
         ephemeral: true,
       })
     }

@@ -1,4 +1,4 @@
-import { Client, Interaction } from 'discord.js'
+import { Interaction } from 'discord.js'
 import Suggestion from '../../models/Suggestion'
 import { formatResults } from '../../utils/formatResult'
 
@@ -36,12 +36,12 @@ const handleSuggestions = async (interaction: Interaction) => {
     if (action === 'approve') {
       if (!interaction.memberPermissions.has('Administrator')) {
         return await interaction.editReply(
-          'Nemáte oprávnění na schvalování návrhů'
+          'Nemáte oprávnění na schvalování návrhů.'
         )
       }
 
       targetSuggestion.status = 'approved'
-      ;(targetMessageEmbed as any).color = 0x84e660
+      ;(targetMessageEmbed as any).data.color = 0x84e660
       targetMessageEmbed.fields[1].value = '✅ Schváleno'
 
       await targetSuggestion.save()
@@ -57,11 +57,11 @@ const handleSuggestions = async (interaction: Interaction) => {
     if (action === 'reject') {
       if (!interaction.memberPermissions.has('Administrator')) {
         return await interaction.editReply(
-          'Nemáte oprávnění na zamítnutí návrhů'
+          'Nemáte oprávnění na zamítnutí návrhů.'
         )
       }
 
-      targetSuggestion.status = 'reject'
+      targetSuggestion.status = 'rejected'
       ;(targetMessageEmbed as any).data.color = 0xff6161
       targetMessageEmbed.fields[1].value = '❌ Zamítnuto'
 
@@ -81,14 +81,14 @@ const handleSuggestions = async (interaction: Interaction) => {
         targetSuggestion.downvotes.includes(interaction.user.id)
 
       if (hasVoted) {
-        return await interaction.editReply('Už jste hlasovali')
+        return await interaction.editReply('Už jste hlasovali.')
       }
 
       targetSuggestion.upvotes.push(interaction.user.id)
 
       await targetSuggestion.save()
 
-      interaction.editReply('Hlasoval jsi pro 👍🏼 Ano')
+      interaction.editReply('Hlasoval jsi pro 👍🏼 Ano.')
 
       targetMessageEmbed.fields[2].value = formatResults(
         targetSuggestion.upvotes,
@@ -108,14 +108,14 @@ const handleSuggestions = async (interaction: Interaction) => {
         targetSuggestion.downvotes.includes(interaction.user.id)
 
       if (hasVoted) {
-        return await interaction.editReply('Už jste hlasovali')
+        return await interaction.editReply('Už jste hlasovali.')
       }
 
       targetSuggestion.downvotes.push(interaction.user.id)
 
       await targetSuggestion.save()
 
-      interaction.editReply('Hlasoval jsi pro 👎🏼 Ne')
+      interaction.editReply('Hlasoval jsi pro 👎🏼 Ne.')
 
       targetMessageEmbed.fields[2].value = formatResults(
         targetSuggestion.upvotes,
