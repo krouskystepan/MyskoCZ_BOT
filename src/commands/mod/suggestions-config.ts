@@ -8,7 +8,7 @@ import { CommandData, CommandOptions, SlashCommandProps } from 'commandkit'
 import { checkGuildConfiguration } from '../../utils/utils'
 
 export const data: CommandData = {
-  name: 'config-suggestions',
+  name: 'suggestions-config',
   description: 'Nastav konfiguraci serveru pro návrhy.',
   contexts: [0],
   options: [
@@ -30,13 +30,25 @@ export const data: CommandData = {
       name: 'remove',
       description: 'Odebrání kanálu pro návrhy.',
       type: ApplicationCommandOptionType.Subcommand,
-
       options: [
         {
           name: 'channel',
           description: 'Kanál pro návrhy.',
           type: ApplicationCommandOptionType.Channel,
           channel_types: [ChannelType.GuildText],
+          required: true,
+        },
+      ],
+    },
+    {
+      name: 'remove-id',
+      description: 'Odebrání kanálu pro návrhy skrze ID.',
+      type: ApplicationCommandOptionType.Subcommand,
+      options: [
+        {
+          name: 'channel-id',
+          description: 'Kanál pro návrhy ID.',
+          type: ApplicationCommandOptionType.String,
           required: true,
         },
       ],
@@ -65,7 +77,7 @@ export const data: CommandData = {
 export const options: CommandOptions = {
   userPermissions: ['Administrator'],
   botPermissions: ['Administrator'],
-  deleted: false,
+  deleted: true,
 }
 
 export async function run({ interaction, client, handler }: SlashCommandProps) {
@@ -129,13 +141,44 @@ export async function run({ interaction, client, handler }: SlashCommandProps) {
     )
   }
 
+  if (subcommand === 'remove-id') {
+    const channelId = options.getString('channel-id')
+
+    if (!channelId) {
+      return interaction.reply({
+        content: 'Něco se pokazilo.',
+      })
+    }
+
+    if (!guildConfiguration.suggestionChannelIds.includes(channelId)) {
+      return await interaction.reply(
+        `Kanál s ID ${channelId} není nastavený pro návrhy.`
+      )
+    }
+
+    guildConfiguration.suggestionChannelIds =
+      guildConfiguration.suggestionChannelIds.filter((id) => id !== channelId)
+
+    await guildConfiguration.save()
+
+    return await interaction.reply(
+      `Kanál s ID ${channelId} byl úspěšně odebrán z návrhů.`
+    )
+  }
+
   if (subcommand === 'channels') {
     const channels = guildConfiguration.suggestionChannelIds.map(
-      (id) => `<#${id}>`
+      (id) => `<#${id}> (ID: ${id})`
     )
 
+    if (channels.length === 0) {
+      return await interaction.reply({
+        content: `Není nastavený žádný kanál pro návrhy.`,
+      })
+    }
+
     return await interaction.reply({
-      content: `Kanály pro návrhy: ${channels.join(', ')}.`,
+      content: `Kanály pro návrhy: \n${channels.join('\n')}`,
     })
   }
 

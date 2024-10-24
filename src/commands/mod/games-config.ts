@@ -7,7 +7,7 @@ import { CommandData, CommandOptions, SlashCommandProps } from 'commandkit'
 import { checkGuildConfiguration } from '../../utils/utils'
 
 export const data: CommandData = {
-  name: 'config-games',
+  name: 'games-config',
   description: 'Nastav konfiguraci serveru pro herní příkazy.',
   contexts: [0],
   options: [
@@ -29,13 +29,25 @@ export const data: CommandData = {
       name: 'remove',
       description: 'Odebrání kanálu pro hry.',
       type: ApplicationCommandOptionType.Subcommand,
-
       options: [
         {
           name: 'channel',
           description: 'Kanál pro hry.',
           type: ApplicationCommandOptionType.Channel,
           channel_types: [ChannelType.GuildText],
+          required: true,
+        },
+      ],
+    },
+    {
+      name: 'remove-id',
+      description: 'Odebrání kanálu pro hry skrze ID.',
+      type: ApplicationCommandOptionType.Subcommand,
+      options: [
+        {
+          name: 'channel-id',
+          description: 'Kanál pro hry ID.',
+          type: ApplicationCommandOptionType.String,
           required: true,
         },
       ],
@@ -113,11 +125,44 @@ export async function run({ interaction, client, handler }: SlashCommandProps) {
     )
   }
 
+  if (subcommand === 'remove-id') {
+    const channelId = options.getString('channel-id')
+
+    if (!channelId) {
+      return interaction.reply({
+        content: 'Něco se pokazilo.',
+      })
+    }
+
+    if (!guildConfiguration.gameChannelIds.includes(channelId)) {
+      return await interaction.reply(
+        `Kanál s ID ${channelId} není nastavený pro hry.`
+      )
+    }
+
+    guildConfiguration.gameChannelIds =
+      guildConfiguration.gameChannelIds.filter((id) => id !== channelId)
+
+    await guildConfiguration.save()
+
+    return await interaction.reply(
+      `Kanál s ID ${channelId} byl úspěšně odebrán z her.`
+    )
+  }
+
   if (subcommand === 'channels') {
-    const channels = guildConfiguration.gameChannelIds.map((id) => `<#${id}>`)
+    const channels = guildConfiguration.gameChannelIds.map(
+      (id) => `<#${id}> (ID: ${id})`
+    )
+
+    if (channels.length === 0) {
+      return await interaction.reply({
+        content: `Není nastavený žádný kanál pro hry.`,
+      })
+    }
 
     return await interaction.reply({
-      content: `Kanály pro hry: ${channels.join(', ')}.`,
+      content: `Kanály pro hry: \n${channels.join('\n')}`,
     })
   }
 }

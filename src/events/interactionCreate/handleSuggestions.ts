@@ -2,7 +2,7 @@ import { Interaction } from 'discord.js'
 import Suggestion from '../../models/Suggestion'
 import { formatResults } from '../../utils/formatResult'
 
-const handleSuggestions = async (interaction: Interaction) => {
+export default async (interaction: Interaction) => {
   if (!interaction.isButton() || !interaction.customId) return
 
   try {
@@ -132,5 +132,3 @@ const handleSuggestions = async (interaction: Interaction) => {
     console.error('Error in handleSuggestions.ts', error)
   }
 }
-
-export default handleSuggestions

@@ -1,6 +1,6 @@
 import { Schema, model } from 'mongoose'
 
-const guildConfiguration = new Schema({
+const guildConfigurationSchema = new Schema({
   guildId: {
     type: String,
     required: true,
@@ -13,6 +13,10 @@ const guildConfiguration = new Schema({
     type: [String],
     default: [],
   },
+  countingChannelId: {
+    type: String,
+    default: '',
+  },
 })
 
-export default model('GuildConfiguration', guildConfiguration)
+export default model('GuildConfiguration', guildConfigurationSchema)

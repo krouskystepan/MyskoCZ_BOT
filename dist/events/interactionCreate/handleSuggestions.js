@@ -2,7 +2,7 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 const Suggestion_1 = require("../../models/Suggestion");
 const formatResult_1 = require("../../utils/formatResult");
-const handleSuggestions = async (interaction) => {
+exports.default = async (interaction) => {
     if (!interaction.isButton() || !interaction.customId)
         return;
     try {
@@ -87,4 +87,3 @@ const handleSuggestions = async (interaction) => {
         console.error('Error in handleSuggestions.ts', error);
     }
 };
-exports.default = handleSuggestions;
