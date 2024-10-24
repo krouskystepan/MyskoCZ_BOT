@@ -4,7 +4,7 @@ exports.options = exports.data = void 0;
 exports.run = run;
 exports.data = {
     name: 'ping',
-    description: 'Odpoví s latencí bota a websocketu',
+    description: 'Odpoví s latencí bota a websocketu.',
 };
 exports.options = {
     deleted: false,

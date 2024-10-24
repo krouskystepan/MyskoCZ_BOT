@@ -7,17 +7,17 @@ const Suggestion_1 = require("../../models/Suggestion");
 const utils_1 = require("../../utils/utils");
 exports.data = {
     name: 'config-suggestions',
-    description: 'Nastav konfiguraci serveru pro návrhy',
+    description: 'Nastav konfiguraci serveru pro návrhy.',
     contexts: [0],
     options: [
         {
             name: 'add',
-            description: 'Přídání kanálu pro návrhy',
+            description: 'Přídání kanálu pro návrhy.',
             type: discord_js_1.ApplicationCommandOptionType.Subcommand,
             options: [
                 {
                     name: 'channel',
-                    description: 'Kanál pro návrhy',
+                    description: 'Kanál pro návrhy.',
                     type: discord_js_1.ApplicationCommandOptionType.Channel,
                     channel_types: [discord_js_1.ChannelType.GuildText],
                     required: true,
@@ -26,12 +26,12 @@ exports.data = {
         },
         {
             name: 'remove',
-            description: 'Odebrání kanálu pro návrhy',
+            description: 'Odebrání kanálu pro návrhy.',
             type: discord_js_1.ApplicationCommandOptionType.Subcommand,
             options: [
                 {
                     name: 'channel',
-                    description: 'Kanál pro návrhy',
+                    description: 'Kanál pro návrhy.',
                     type: discord_js_1.ApplicationCommandOptionType.Channel,
                     channel_types: [discord_js_1.ChannelType.GuildText],
                     required: true,
@@ -40,17 +40,17 @@ exports.data = {
         },
         {
             name: 'channels',
-            description: 'Zobrazí kanály pro návrhy',
+            description: 'Zobrazí kanály pro návrhy.',
             type: discord_js_1.ApplicationCommandOptionType.Subcommand,
         },
         {
             name: 'check',
-            description: 'Vypíše, kdo jak hlasoval pro daný návrh',
+            description: 'Vypíše, kdo jak hlasoval pro daný návrh.',
             type: discord_js_1.ApplicationCommandOptionType.Subcommand,
             options: [
                 {
                     name: 'id',
-                    description: 'ID návrhu',
+                    description: 'ID návrhu.',
                     type: discord_js_1.ApplicationCommandOptionType.String,
                     required: true,
                 },
@@ -66,7 +66,7 @@ exports.options = {
 async function run({ interaction, client, handler }) {
     if (!interaction.guildId) {
         return interaction.reply({
-            content: 'Něco se pokokazilo',
+            content: 'Něco se pokokazilo.',
         });
     }
     const guildConfiguration = await (0, utils_1.checkGuildConfiguration)(interaction.guildId);
@@ -76,35 +76,35 @@ async function run({ interaction, client, handler }) {
         const channel = options.getChannel('channel');
         if (!channel) {
             return interaction.reply({
-                content: 'Něco se pokazilo',
+                content: 'Něco se pokazilo.',
             });
         }
         if (guildConfiguration.suggestionChannelIds.includes(channel.id)) {
-            return await interaction.reply(`Kanál ${channel} už je nastavený pro návrhy`);
+            return await interaction.reply(`Kanál ${channel} už je nastavený pro návrhy.`);
         }
         guildConfiguration.suggestionChannelIds.push(channel.id);
         await guildConfiguration.save();
-        return await interaction.reply(`Kanál ${channel} byl úspěšně přidán pro návrhy`);
+        return await interaction.reply(`Kanál ${channel} byl úspěšně přidán pro návrhy.`);
     }
     if (subcommand === 'remove') {
         const channel = options.getChannel('channel');
         if (!channel) {
             return interaction.reply({
-                content: 'Něco se pokazilo',
+                content: 'Něco se pokazilo.',
             });
         }
         if (!guildConfiguration.suggestionChannelIds.includes(channel.id)) {
-            return await interaction.reply(`Kanál ${channel} není nastavený pro návrhy`);
+            return await interaction.reply(`Kanál ${channel} není nastavený pro návrhy.`);
         }
         guildConfiguration.suggestionChannelIds =
             guildConfiguration.suggestionChannelIds.filter((id) => id !== channel.id);
         await guildConfiguration.save();
-        return await interaction.reply(`Kanál ${channel} byl úspěšně odebrán z návrhů`);
+        return await interaction.reply(`Kanál ${channel} byl úspěšně odebrán z návrhů.`);
     }
     if (subcommand === 'channels') {
         const channels = guildConfiguration.suggestionChannelIds.map((id) => `<#${id}>`);
         return await interaction.reply({
-            content: `Kanály pro návrhy: ${channels.join(', ')}`,
+            content: `Kanály pro návrhy: ${channels.join(', ')}.`,
         });
     }
     if (subcommand === 'check') {
@@ -114,7 +114,7 @@ async function run({ interaction, client, handler }) {
         });
         if (!suggestion) {
             return await interaction.reply({
-                content: 'Návrh nebyl nalezen',
+                content: 'Návrh nebyl nalezen.',
                 ephemeral: true,
             });
         }

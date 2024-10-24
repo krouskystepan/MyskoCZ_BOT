@@ -29,18 +29,18 @@ async function run({ interaction, client, handler }) {
             return await interaction.reply({
                 content: `Tento kanál není nastaven pro používání příkazu \`/navrh\`. Zkuste jeden z těchto kanálů: ${guildConfiguration.suggestionChannelIds
                     .map((id) => `<#${id}>`)
-                    .join(', ')}`,
+                    .join(', ')}.`,
                 ephemeral: true,
             });
         }
         const modal = new discord_js_1.ModalBuilder()
-            .setTitle('Navrhni něco')
+            .setTitle('Navrhni něco.')
             .setCustomId(`suggestion-${interaction.user.id}`);
         const textInputs = new discord_js_1.TextInputBuilder()
             .setCustomId('suggestion-input')
             .setLabel('Co by jsi chtěl navrhnout?')
             .setStyle(discord_js_1.TextInputStyle.Paragraph)
-            .setPlaceholder('Napište návrh')
+            .setPlaceholder('Napište návrh.')
             .setRequired(true)
             .setMaxLength(1000);
         const actionRow = new discord_js_1.ActionRowBuilder().addComponents(textInputs);
