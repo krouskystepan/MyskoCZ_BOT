@@ -24,13 +24,17 @@ const choices = [
 exports.data = {
     name: 'rps',
     description: 'Zahraj si kámen, nůžky, papír!',
+    options: [
+        {
+            name: 'hráč',
+            description: 'Vyber hráče, kterého chceš vyzvat.',
+            type: discord_js_1.ApplicationCommandOptionType.User,
+            required: true,
+        },
+    ],
     contexts: [0],
 };
 exports.options = {
-    name: 'hráč',
-    description: 'Vyber hráče, kterého chceš vyzvat.',
-    type: discord_js_1.ApplicationCommandOptionType.User,
-    required: true,
     deleted: false,
 };
 async function run({ interaction, client, handler }) {

@@ -30,14 +30,18 @@ const choices = [
 export const data: CommandData = {
   name: 'rps',
   description: 'Zahraj si kámen, nůžky, papír!',
+  options: [
+    {
+      name: 'hráč',
+      description: 'Vyber hráče, kterého chceš vyzvat.',
+      type: ApplicationCommandOptionType.User,
+      required: true,
+    },
+  ],
   contexts: [0],
 }
 
 export const options: CommandOptions = {
-  name: 'hráč',
-  description: 'Vyber hráče, kterého chceš vyzvat.',
-  type: ApplicationCommandOptionType.User,
-  required: true,
   deleted: false,
 }
 
