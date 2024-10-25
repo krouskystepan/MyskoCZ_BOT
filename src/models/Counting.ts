@@ -5,6 +5,12 @@ const CountingSchema = new Schema({
   count: { type: Number, default: 0 },
   lastCounter: { type: String, default: '' },
   highestCount: { type: Number, default: 0 },
+  specialNumbers: [
+    {
+      number: { type: Number, required: true },
+      emoji: { type: String, required: true },
+    },
+  ],
 })
 
 export default model('Counting', CountingSchema)

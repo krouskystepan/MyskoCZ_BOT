@@ -53,6 +53,14 @@ exports.default = async (message, client, handler) => {
     }
     countCache[guildId].count = nextNumber;
     countCache[guildId].lastCounter = userId;
+    const specialNumbers = await Counting_1.default.findOne({ guildId }).then((res) => res?.specialNumbers || new Map());
+    let reaction;
+    if (specialNumbers instanceof Map) {
+        reaction = specialNumbers.get(nextNumber);
+    }
+    else {
+        reaction = specialNumbers.find((item) => item.number === nextNumber)?.emoji;
+    }
     if (nextNumber > highestCount) {
         countCache[guildId].highestCount = nextNumber;
         await message.react('☑️');
@@ -60,28 +68,8 @@ exports.default = async (message, client, handler) => {
     else {
         await message.react('✅');
     }
-    switch (nextNumber) {
-        case 69:
-            await message.react('😏');
-            break;
-        case 100:
-            await message.react('🎉');
-            break;
-        case 420:
-            await message.react('🍀');
-            break;
-        case 666:
-            await message.react('😈');
-            break;
-        case 777:
-            await message.react('🎰');
-            break;
-        case 404:
-            await message.react('❓');
-            break;
-        case 1234:
-            await message.react('🔢');
-            break;
+    if (reaction) {
+        await message.react(reaction);
     }
     await Counting_1.default.updateOne({ guildId }, {
         count: nextNumber,

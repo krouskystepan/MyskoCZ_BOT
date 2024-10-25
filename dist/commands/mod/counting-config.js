@@ -57,7 +57,7 @@ exports.data = {
             type: discord_js_1.ApplicationCommandOptionType.Subcommand,
         },
         {
-            name: 'set',
+            name: 'set-count',
             description: 'Nastaví počítání na zadané číslo.',
             type: discord_js_1.ApplicationCommandOptionType.Subcommand,
             options: [
@@ -68,6 +68,43 @@ exports.data = {
                     required: true,
                 },
             ],
+        },
+        {
+            name: 'add-special-number',
+            description: 'Nastaví speciální emoji pro zadané číslo.',
+            type: discord_js_1.ApplicationCommandOptionType.Subcommand,
+            options: [
+                {
+                    name: 'number',
+                    description: 'Číslo',
+                    type: discord_js_1.ApplicationCommandOptionType.Number,
+                    required: true,
+                },
+                {
+                    name: 'emoji',
+                    description: 'Emoji',
+                    type: discord_js_1.ApplicationCommandOptionType.String,
+                    required: true,
+                },
+            ],
+        },
+        {
+            name: 'remove-special-number',
+            description: 'Smaže speciální emoji pro zadané číslo.',
+            type: discord_js_1.ApplicationCommandOptionType.Subcommand,
+            options: [
+                {
+                    name: 'number',
+                    description: 'Číslo',
+                    type: discord_js_1.ApplicationCommandOptionType.Number,
+                    required: true,
+                },
+            ],
+        },
+        {
+            name: 'special-numbers',
+            description: 'Zobrazí speciální čísla s emoji.',
+            type: discord_js_1.ApplicationCommandOptionType.Subcommand,
         },
     ],
 };
@@ -85,7 +122,7 @@ async function run({ interaction, client, handler }) {
     const guildConfiguration = await (0, utils_1.checkGuildConfiguration)(interaction.guildId);
     const options = interaction.options;
     const subcommand = options.getSubcommand();
-    if (subcommand === 'add') {
+    if (subcommand === 'channel') {
         const channel = options.getChannel('channel');
         if (!channel) {
             return interaction.reply({
@@ -142,17 +179,87 @@ async function run({ interaction, client, handler }) {
             content: `Kanál pro počítaní: \n${channel}`,
         });
     }
-    if (subcommand === 'set') {
+    if (subcommand === 'set-count') {
         const number = options.getNumber('number');
         if (!number) {
             return interaction.reply({
                 content: 'Něco se pokazilo.',
+                ephemeral: true,
             });
         }
         await Counting_1.default.updateOne({ guildId: interaction.guildId }, { count: number });
         return await interaction.reply({
             content: `Počítání bylo nastaveno na číslo ${number}.`,
             ephemeral: true,
+        });
+    }
+    if (subcommand === 'add-special-number') {
+        const number = options.getNumber('number');
+        const emoji = options.getString('emoji');
+        if (typeof number !== 'number' || !emoji) {
+            return interaction.reply({
+                content: 'Něco se pokazilo. Zkontrolujte číslo a emoji.',
+            });
+        }
+        const counting = await Counting_1.default.findOne({ guildId: interaction.guildId });
+        if (!counting) {
+            return interaction.reply({
+                content: 'Něco se pokazilo. Konfigurace pro počítání nebyla nalezena.',
+            });
+        }
+        const existingEntry = counting.specialNumbers.find((entry) => entry.number === number);
+        if (existingEntry) {
+            return interaction.reply({
+                content: `Pro číslo ${number} už je nastavené emoji.`,
+            });
+        }
+        else {
+            counting.specialNumbers.push({ number, emoji });
+        }
+        await counting.save();
+        return interaction.reply({
+            content: `Emoji ${emoji} bylo nastaveno pro číslo ${number}.`,
+            ephemeral: true,
+        });
+    }
+    if (subcommand === 'remove-special-number') {
+        const number = options.getNumber('number');
+        if (!number) {
+            return interaction.reply({
+                content: 'Něco se pokazilo.',
+            });
+        }
+        const counting = await Counting_1.default.findOne({ guildId: interaction.guildId });
+        if (!counting) {
+            return interaction.reply({
+                content: 'Něco se pokazilo.',
+            });
+        }
+        const existingEntry = counting.specialNumbers.find((entry) => entry.number === number);
+        if (!existingEntry) {
+            return interaction.reply({
+                content: `Pro číslo ${number} není nastavené žádné emoji.`,
+            });
+        }
+        else {
+            counting.specialNumbers.pull({ number });
+        }
+        await counting.save();
+        return interaction.reply({
+            content: `Emoji pro číslo ${number} bylo úspěšně odebráno.`,
+            ephemeral: true,
+        });
+    }
+    if (subcommand === 'special-numbers') {
+        const counting = await Counting_1.default.findOne({ guildId: interaction.guildId });
+        if (!counting) {
+            return interaction.reply({
+                content: 'Něco se pokazilo.',
+            });
+        }
+        const specialNumbers = counting.specialNumbers.map((specialNumber) => `${specialNumber.number}: ${specialNumber.emoji}`);
+        return await interaction.reply({
+            content: `Speciální čísla s emoji: \n${specialNumbers.join('\n')}`,
         });
     }
 }
