@@ -40,7 +40,7 @@ exports.default = async (message, client, handler) => {
     if (userId === lastCounter) {
         const success = Math.random() < 0.5;
         if (!success) {
-            await resetCount(guildId, message, 'Nemůžeš počítat dvakrát za sebou. (Máš 50% šanci na úspěch.)');
+            await resetCount(guildId, message, 'Nemůžeš počítat dvakrát za sebou (Máš 50% šanci na úspěch).');
             await message.react('❌');
             return;
         }
@@ -60,6 +60,29 @@ exports.default = async (message, client, handler) => {
     else {
         await message.react('✅');
     }
+    switch (nextNumber) {
+        case 69:
+            await message.react('😏');
+            break;
+        case 100:
+            await message.react('🎉');
+            break;
+        case 420:
+            await message.react('🍀');
+            break;
+        case 666:
+            await message.react('😈');
+            break;
+        case 777:
+            await message.react('🎰');
+            break;
+        case 404:
+            await message.react('❓');
+            break;
+        case 1234:
+            await message.react('🔢');
+            break;
+    }
     await Counting_1.default.updateOne({ guildId }, {
         count: nextNumber,
         lastCounter: userId,
@@ -67,11 +90,12 @@ exports.default = async (message, client, handler) => {
     }, { upsert: true });
 };
 const resetCount = async (guildId, message, reason) => {
+    const highestCount = countCache[guildId]?.highestCount || 0;
     countCache[guildId] = {
         count: 0,
         lastCounter: '',
-        highestCount: countCache[guildId]?.highestCount || 0,
+        highestCount: highestCount,
     };
-    await Counting_1.default.updateOne({ guildId }, { count: 0, lastCounter: '' });
-    message.reply(`<@${message.author.id}>\n__**Počítání bylo resetováno.**__\n\n**Důvod:** ${reason}\nDosavadní rekord: **${countCache[guildId].highestCount}**\nDalší číslo je: **1**.`);
+    await Counting_1.default.updateOne({ guildId }, { count: 0, lastCounter: '', highestCount: highestCount });
+    message.reply(`**<@${message.author.id}> to zkazil/a!**\n\n**Důvod:** ${reason}\n**Dosavadní rekord:** ${highestCount}.\n**Další číslo je:** 1.`);
 };

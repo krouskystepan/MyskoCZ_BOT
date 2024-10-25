@@ -133,7 +133,7 @@ async function run({ interaction, client, handler }) {
     if (subcommand === 'channel') {
         const channelId = guildConfiguration.countingChannelId;
         const channel = `<#${channelId}> (ID: ${channelId})`;
-        if (!channel) {
+        if (!channelId) {
             return await interaction.reply({
                 content: `Není nastavený žádný kanál pro hry.`,
             });
@@ -150,5 +150,9 @@ async function run({ interaction, client, handler }) {
             });
         }
         await Counting_1.default.updateOne({ guildId: interaction.guildId }, { count: number });
+        return await interaction.reply({
+            content: `Počítání bylo nastaveno na číslo ${number}.`,
+            ephemeral: true,
+        });
     }
 }
