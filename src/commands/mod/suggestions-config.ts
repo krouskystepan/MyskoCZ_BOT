@@ -192,7 +192,6 @@ export async function run({ interaction, client, handler }: SlashCommandProps) {
     if (!suggestion) {
       return await interaction.reply({
         content: 'Návrh nebyl nalezen.',
-        ephemeral: true,
       })
     }
 
@@ -201,7 +200,6 @@ export async function run({ interaction, client, handler }: SlashCommandProps) {
     if (!guild) {
       return await interaction.reply({
         content: 'Tento příkaz lze použít pouze na serveru.',
-        ephemeral: true,
       })
     }
 

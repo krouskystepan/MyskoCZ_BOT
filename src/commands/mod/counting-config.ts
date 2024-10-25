@@ -136,19 +136,22 @@ export async function run({ interaction, client, handler }: SlashCommandProps) {
     if (!channel) {
       return interaction.reply({
         content: 'Něco se pokazilo.',
+        ephemeral: true,
       })
     }
 
     if (guildConfiguration.countingChannelId === channel.id) {
-      return await interaction.reply(
-        `Kanál ${channel} už je nastavený pro počítání.`
-      )
+      return await interaction.reply({
+        content: `Kanál ${channel} už je nastavený pro počítání.`,
+        ephemeral: true,
+      })
     }
 
     if (guildConfiguration.countingChannelId) {
-      return await interaction.reply(
-        `Pro počítání nemůže být nastaven více než jeden kanál.`
-      )
+      return await interaction.reply({
+        content: `Pro počítání nemůže být nastaven více než jeden kanál.`,
+        ephemeral: true,
+      })
     }
 
     guildConfiguration.countingChannelId = channel.id
@@ -165,13 +168,15 @@ export async function run({ interaction, client, handler }: SlashCommandProps) {
     if (!channel) {
       return interaction.reply({
         content: 'Něco se pokazilo.',
+        ephemeral: true,
       })
     }
 
     if (guildConfiguration.countingChannelId !== channel.id) {
-      return await interaction.reply(
-        `Kanál ${channel} není nastavený pro počítaní.`
-      )
+      return await interaction.reply({
+        content: `Kanál ${channel} není nastavený pro počítaní.`,
+        ephemeral: true,
+      })
     }
 
     guildConfiguration.countingChannelId = ''
@@ -189,13 +194,15 @@ export async function run({ interaction, client, handler }: SlashCommandProps) {
     if (!channelId) {
       return interaction.reply({
         content: 'Něco se pokazilo.',
+        ephemeral: true,
       })
     }
 
     if (guildConfiguration.countingChannelId !== channelId) {
-      return await interaction.reply(
-        `Kanál s ID ${channelId} není nastavený pro počítání.`
-      )
+      return await interaction.reply({
+        content: `Kanál s ID ${channelId} není nastavený pro počítání.`,
+        ephemeral: true,
+      })
     }
 
     guildConfiguration.countingChannelId = ''
@@ -239,7 +246,6 @@ export async function run({ interaction, client, handler }: SlashCommandProps) {
 
     return await interaction.reply({
       content: `Počítání bylo nastaveno na číslo ${number}.`,
-      ephemeral: true,
     })
   }
 
@@ -250,6 +256,7 @@ export async function run({ interaction, client, handler }: SlashCommandProps) {
     if (typeof number !== 'number' || !emoji) {
       return interaction.reply({
         content: 'Něco se pokazilo. Zkontrolujte číslo a emoji.',
+        ephemeral: true,
       })
     }
 
@@ -258,6 +265,7 @@ export async function run({ interaction, client, handler }: SlashCommandProps) {
     if (!counting) {
       return interaction.reply({
         content: 'Něco se pokazilo. Konfigurace pro počítání nebyla nalezena.',
+        ephemeral: true,
       })
     }
 
@@ -268,6 +276,7 @@ export async function run({ interaction, client, handler }: SlashCommandProps) {
     if (existingEntry) {
       return interaction.reply({
         content: `Pro číslo ${number} už je nastavené emoji.`,
+        ephemeral: true,
       })
     } else {
       counting.specialNumbers.push({ number, emoji })
@@ -277,7 +286,6 @@ export async function run({ interaction, client, handler }: SlashCommandProps) {
 
     return interaction.reply({
       content: `Emoji ${emoji} bylo nastaveno pro číslo ${number}.`,
-      ephemeral: true,
     })
   }
 
@@ -287,6 +295,7 @@ export async function run({ interaction, client, handler }: SlashCommandProps) {
     if (!number) {
       return interaction.reply({
         content: 'Něco se pokazilo.',
+        ephemeral: true,
       })
     }
 
@@ -295,6 +304,7 @@ export async function run({ interaction, client, handler }: SlashCommandProps) {
     if (!counting) {
       return interaction.reply({
         content: 'Něco se pokazilo.',
+        ephemeral: true,
       })
     }
 
@@ -305,6 +315,7 @@ export async function run({ interaction, client, handler }: SlashCommandProps) {
     if (!existingEntry) {
       return interaction.reply({
         content: `Pro číslo ${number} není nastavené žádné emoji.`,
+        ephemeral: true,
       })
     } else {
       counting.specialNumbers.pull({ number })
@@ -314,7 +325,6 @@ export async function run({ interaction, client, handler }: SlashCommandProps) {
 
     return interaction.reply({
       content: `Emoji pro číslo ${number} bylo úspěšně odebráno.`,
-      ephemeral: true,
     })
   }
 
@@ -324,6 +334,7 @@ export async function run({ interaction, client, handler }: SlashCommandProps) {
     if (!counting) {
       return interaction.reply({
         content: 'Něco se pokazilo.',
+        ephemeral: true,
       })
     }
 

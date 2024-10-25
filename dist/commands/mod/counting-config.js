@@ -127,13 +127,20 @@ async function run({ interaction, client, handler }) {
         if (!channel) {
             return interaction.reply({
                 content: 'Něco se pokazilo.',
+                ephemeral: true,
             });
         }
         if (guildConfiguration.countingChannelId === channel.id) {
-            return await interaction.reply(`Kanál ${channel} už je nastavený pro počítání.`);
+            return await interaction.reply({
+                content: `Kanál ${channel} už je nastavený pro počítání.`,
+                ephemeral: true,
+            });
         }
         if (guildConfiguration.countingChannelId) {
-            return await interaction.reply(`Pro počítání nemůže být nastaven více než jeden kanál.`);
+            return await interaction.reply({
+                content: `Pro počítání nemůže být nastaven více než jeden kanál.`,
+                ephemeral: true,
+            });
         }
         guildConfiguration.countingChannelId = channel.id;
         await guildConfiguration.save();
@@ -144,10 +151,14 @@ async function run({ interaction, client, handler }) {
         if (!channel) {
             return interaction.reply({
                 content: 'Něco se pokazilo.',
+                ephemeral: true,
             });
         }
         if (guildConfiguration.countingChannelId !== channel.id) {
-            return await interaction.reply(`Kanál ${channel} není nastavený pro počítaní.`);
+            return await interaction.reply({
+                content: `Kanál ${channel} není nastavený pro počítaní.`,
+                ephemeral: true,
+            });
         }
         guildConfiguration.countingChannelId = '';
         await guildConfiguration.save();
@@ -158,10 +169,14 @@ async function run({ interaction, client, handler }) {
         if (!channelId) {
             return interaction.reply({
                 content: 'Něco se pokazilo.',
+                ephemeral: true,
             });
         }
         if (guildConfiguration.countingChannelId !== channelId) {
-            return await interaction.reply(`Kanál s ID ${channelId} není nastavený pro počítání.`);
+            return await interaction.reply({
+                content: `Kanál s ID ${channelId} není nastavený pro počítání.`,
+                ephemeral: true,
+            });
         }
         guildConfiguration.countingChannelId = '';
         await guildConfiguration.save();
@@ -190,7 +205,6 @@ async function run({ interaction, client, handler }) {
         await Counting_1.default.updateOne({ guildId: interaction.guildId }, { count: number });
         return await interaction.reply({
             content: `Počítání bylo nastaveno na číslo ${number}.`,
-            ephemeral: true,
         });
     }
     if (subcommand === 'add-special-number') {
@@ -199,18 +213,21 @@ async function run({ interaction, client, handler }) {
         if (typeof number !== 'number' || !emoji) {
             return interaction.reply({
                 content: 'Něco se pokazilo. Zkontrolujte číslo a emoji.',
+                ephemeral: true,
             });
         }
         const counting = await Counting_1.default.findOne({ guildId: interaction.guildId });
         if (!counting) {
             return interaction.reply({
                 content: 'Něco se pokazilo. Konfigurace pro počítání nebyla nalezena.',
+                ephemeral: true,
             });
         }
         const existingEntry = counting.specialNumbers.find((entry) => entry.number === number);
         if (existingEntry) {
             return interaction.reply({
                 content: `Pro číslo ${number} už je nastavené emoji.`,
+                ephemeral: true,
             });
         }
         else {
@@ -219,7 +236,6 @@ async function run({ interaction, client, handler }) {
         await counting.save();
         return interaction.reply({
             content: `Emoji ${emoji} bylo nastaveno pro číslo ${number}.`,
-            ephemeral: true,
         });
     }
     if (subcommand === 'remove-special-number') {
@@ -227,18 +243,21 @@ async function run({ interaction, client, handler }) {
         if (!number) {
             return interaction.reply({
                 content: 'Něco se pokazilo.',
+                ephemeral: true,
             });
         }
         const counting = await Counting_1.default.findOne({ guildId: interaction.guildId });
         if (!counting) {
             return interaction.reply({
                 content: 'Něco se pokazilo.',
+                ephemeral: true,
             });
         }
         const existingEntry = counting.specialNumbers.find((entry) => entry.number === number);
         if (!existingEntry) {
             return interaction.reply({
                 content: `Pro číslo ${number} není nastavené žádné emoji.`,
+                ephemeral: true,
             });
         }
         else {
@@ -247,7 +266,6 @@ async function run({ interaction, client, handler }) {
         await counting.save();
         return interaction.reply({
             content: `Emoji pro číslo ${number} bylo úspěšně odebráno.`,
-            ephemeral: true,
         });
     }
     if (subcommand === 'special-numbers') {
@@ -255,6 +273,7 @@ async function run({ interaction, client, handler }) {
         if (!counting) {
             return interaction.reply({
                 content: 'Něco se pokazilo.',
+                ephemeral: true,
             });
         }
         const specialNumbers = counting.specialNumbers.map((specialNumber) => `${specialNumber.number}: ${specialNumber.emoji}`);

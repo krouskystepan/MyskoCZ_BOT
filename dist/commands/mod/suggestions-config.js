@@ -148,14 +148,12 @@ async function run({ interaction, client, handler }) {
         if (!suggestion) {
             return await interaction.reply({
                 content: 'Návrh nebyl nalezen.',
-                ephemeral: true,
             });
         }
         const guild = interaction.guild;
         if (!guild) {
             return await interaction.reply({
                 content: 'Tento příkaz lze použít pouze na serveru.',
-                ephemeral: true,
             });
         }
         const upvoteUsers = await Promise.all(suggestion.upvotes.map(async (userId) => {
