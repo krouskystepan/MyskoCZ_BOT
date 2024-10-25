@@ -57,7 +57,7 @@ export default async (
       await resetCount(
         guildId,
         message,
-        'Nemůžeš počítat dvakrát za sebou. (Máš 50% šanci na úspěch.)'
+        'Nemůžeš počítat dvakrát za sebou (Máš 50% šanci na úspěch).'
       )
       await message.react('❌')
       return
@@ -81,6 +81,30 @@ export default async (
     await message.react('✅')
   }
 
+  switch (nextNumber) {
+    case 69:
+      await message.react('😏')
+      break
+    case 100:
+      await message.react('🎉')
+      break
+    case 420:
+      await message.react('🍀')
+      break
+    case 666:
+      await message.react('😈')
+      break
+    case 777:
+      await message.react('🎰')
+      break
+    case 404:
+      await message.react('❓')
+      break
+    case 1234:
+      await message.react('🔢')
+      break
+  }
+
   await Counting.updateOne(
     { guildId },
     {
@@ -97,15 +121,19 @@ const resetCount = async (
   message: Message<true>,
   reason: string
 ) => {
+  const highestCount = countCache[guildId]?.highestCount || 0
   countCache[guildId] = {
     count: 0,
     lastCounter: '',
-    highestCount: countCache[guildId]?.highestCount || 0,
+    highestCount: highestCount,
   }
 
-  await Counting.updateOne({ guildId }, { count: 0, lastCounter: '' })
+  await Counting.updateOne(
+    { guildId },
+    { count: 0, lastCounter: '', highestCount: highestCount }
+  )
 
   message.reply(
-    `<@${message.author.id}>\n__**Počítání bylo resetováno.**__\n\n**Důvod:** ${reason}\nDosavadní rekord: **${countCache[guildId].highestCount}**\nDalší číslo je: **1**.`
+    `**<@${message.author.id}> to zkazil/a!**\n\n**Důvod:** ${reason}\n**Dosavadní rekord:** ${highestCount}.\n**Další číslo je:** 1.`
   )
 }

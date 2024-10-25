@@ -174,7 +174,7 @@ export async function run({ interaction, client, handler }: SlashCommandProps) {
     const channelId = guildConfiguration.countingChannelId
     const channel = `<#${channelId}> (ID: ${channelId})`
 
-    if (!channel) {
+    if (!channelId) {
       return await interaction.reply({
         content: `Není nastavený žádný kanál pro hry.`,
       })
@@ -198,5 +198,10 @@ export async function run({ interaction, client, handler }: SlashCommandProps) {
       { guildId: interaction.guildId },
       { count: number }
     )
+
+    return await interaction.reply({
+      content: `Počítání bylo nastaveno na číslo ${number}.`,
+      ephemeral: true,
+    })
   }
 }
