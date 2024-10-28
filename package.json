@@ -1,11 +1,11 @@
 {
   "name": "myskocz_bot",
   "version": "1.0.0",
-  "main": "dist/index.js",
+  "main": "src/index.ts",
   "scripts": {
-    "dev": "tsx --watch src/index.ts",
-    "build": "tsc",
-    "start": "node ."
+    "dev": "tsx --watch .",
+    "build": "tsc .",
+    "start": "node dist/index.js"
   },
   "keywords": [],
   "author": "",
