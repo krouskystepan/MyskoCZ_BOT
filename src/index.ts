@@ -21,8 +21,8 @@ async function startApp(client: Client) {
     // devRoleIds: [],
     bulkRegister: true,
   })
+
+  client.login(process.env.TOKEN)
 }
 
 startApp(client)
-
-client.login(process.env.TOKEN)
