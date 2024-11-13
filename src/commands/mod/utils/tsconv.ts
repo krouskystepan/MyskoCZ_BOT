@@ -7,7 +7,6 @@ import { CommandData, CommandOptions, SlashCommandProps } from 'commandkit'
 export const data: CommandData = {
   name: 'tsconv',
   description: 'Převod timestampů.',
-  contexts: [0],
   options: [
     {
       name: 'use',

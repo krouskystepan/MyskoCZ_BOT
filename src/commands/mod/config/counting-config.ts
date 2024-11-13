@@ -4,8 +4,8 @@ import {
   CommandInteractionOptionResolver,
 } from 'discord.js'
 import { CommandData, CommandOptions, SlashCommandProps } from 'commandkit'
-import { checkGuildConfiguration } from '../../utils/utils'
-import Counting from '../../models/Counting'
+import { checkGuildConfiguration } from '../../../utils/utils'
+import Counting from '../../../models/Counting'
 
 export const data: CommandData = {
   name: 'counting-config',

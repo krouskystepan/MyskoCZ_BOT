@@ -3,9 +3,9 @@ import {
   ChannelType,
   CommandInteractionOptionResolver,
 } from 'discord.js'
-import Suggestion from '../../models/Suggestion'
+import Suggestion from '../../../models/Suggestion'
 import { CommandData, CommandOptions, SlashCommandProps } from 'commandkit'
-import { checkGuildConfiguration } from '../../utils/utils'
+import { checkGuildConfiguration } from '../../../utils/utils'
 
 export const data: CommandData = {
   name: 'suggestions-config',
