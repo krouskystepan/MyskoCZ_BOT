@@ -12,7 +12,7 @@ export const options: CommandOptions = {
   deleted: false,
 }
 
-const cooldownTime = 60 * 1000 // Cooldown pro běžné uživatele (1 minuta)
+const cooldownTime = 60 * 1000
 const cooldowns = new Map<string, number>()
 
 async function translateToCzech(text: string): Promise<string> {
@@ -32,11 +32,9 @@ export async function run({ interaction }: SlashCommandProps) {
     const userId = interaction.user.id
     const now = Date.now()
 
-    // Kontrola, zda má uživatel administrátorská práva
     const member = await interaction.guild?.members.fetch(userId)
     const isAdmin = member?.permissions.has('Administrator')
 
-    // Administrátor může příkaz používat bez cooldownu
     if (!isAdmin) {
       if (cooldowns.has(userId)) {
         const lastUsed = cooldowns.get(userId)!
@@ -75,10 +73,8 @@ export async function run({ interaction }: SlashCommandProps) {
     const originalQuote = data[0].quote
     const author = data[0].author
 
-    // Překlad do češtiny
     const translatedQuote = await translateToCzech(originalQuote)
 
-    // Aktualizace původní odpovědi s citátem
     await interaction.editReply(
       `**${interaction.user.displayName} získal citát:**\n\n> *"${translatedQuote}"*\n— ${author}`
     )
