@@ -2,8 +2,8 @@ import { CommandData, CommandOptions, SlashCommandProps } from 'commandkit'
 import { translate } from '@vitalets/google-translate-api'
 
 export const data: CommandData = {
-  name: 'quote',
-  description: 'Získá náhodný citát přeložený do češtiny.',
+  name: 'dadjoke',
+  description: 'Získá náhodný dadjoke přeložený do češtiny.',
   options: [],
   contexts: [0],
 }
@@ -51,7 +51,7 @@ export async function run({ interaction }: SlashCommandProps) {
       cooldowns.set(userId, now)
     }
 
-    const response = await fetch('https://api.api-ninjas.com/v1/quotes', {
+    const response = await fetch('https://api.api-ninjas.com/v1/dadjokes', {
       method: 'GET',
       headers: {
         'X-Api-Key': process.env.API_NINJAS_KEY!,
@@ -64,24 +64,22 @@ export async function run({ interaction }: SlashCommandProps) {
 
     const data = await response.json()
 
-    if (!data || !data[0]?.quote || !data[0]?.author) {
+    if (!data || data.length === 0) {
       return interaction.editReply(
-        'Nepodařilo se získat citát. Zkuste to prosím znovu.'
+        'Nepodařilo se získat dadjoke. Zkuste to prosím znovu.'
       )
     }
 
-    const originalQuote = data[0].quote
-    const author = data[0].author
-
-    const translatedQuote = await translateToCzech(originalQuote)
+    const joke = data[0].joke
+    const translatedJoke = await translateToCzech(joke)
 
     await interaction.editReply(
-      `**${interaction.user.displayName} požádal o citát:**\n\n**Originál:**\n> *"${originalQuote}"*\n— ${author}\n\n**Přeloženo do češtiny:**\n> *"${translatedQuote}"*\n— ${author}`
+      `**${interaction.user.displayName} požádal o dadjoke:**\n\n**Originál:**\n> *"${joke}"*\n\n**Přeloženo do češtiny:**\n> *"${translatedJoke}"*`
     )
   } catch (error) {
-    console.error('Chyba při získávání nebo překladu citátu:', error)
+    console.error('Chyba při získávání nebo překladu dadjoke:', error)
     await interaction.editReply(
-      'Došlo k chybě při získávání citátu. Zkuste to prosím později.'
+      'Došlo k chybě při získávání dadjoke. Zkuste to prosím později.'
     )
   }
 }
