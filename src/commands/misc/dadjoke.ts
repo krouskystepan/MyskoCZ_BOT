@@ -74,7 +74,7 @@ export async function run({ interaction }: SlashCommandProps) {
     const translatedJoke = await translateToCzech(joke)
 
     await interaction.editReply(
-      `**${interaction.user.displayName} požádal o dadjoke:**\n\n**Originál:**\n> *"${joke}"*\n\n**Přeloženo do češtiny:**\n> *"${translatedJoke}"*`
+      `**${interaction.user.displayName} požádal o dadjoke:**\n\n**Originál:**\n*${joke}*\n\n**Přeloženo do češtiny:**\n*${translatedJoke}*`
     )
   } catch (error) {
     console.error('Chyba při získávání nebo překladu dadjoke:', error)
