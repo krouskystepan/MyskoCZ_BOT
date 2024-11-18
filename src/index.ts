@@ -19,7 +19,7 @@ async function startApp(client: Client) {
     // devGuildIds: [],
     // devUserIds: [],
     // devRoleIds: [],
-    bulkRegister: false,
+    bulkRegister: true,
   })
 
   client.login(process.env.TOKEN)

@@ -1,6 +1,6 @@
 import { ApplicationCommandOptionType } from 'discord.js'
 import type { CommandData, SlashCommandProps, CommandOptions } from 'commandkit'
-import GuildConfiguration from '../../models/GuildConfiguration'
+import GuildConfiguration from '../../../models/GuildConfiguration'
 
 export const data: CommandData = {
   name: 'random',

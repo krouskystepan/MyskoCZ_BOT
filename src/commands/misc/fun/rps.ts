@@ -7,7 +7,7 @@ import {
   EmbedBuilder,
 } from 'discord.js'
 import { CommandData, CommandOptions, SlashCommandProps } from 'commandkit'
-import GuildConfiguration from '../../models/GuildConfiguration'
+import GuildConfiguration from '../../../models/GuildConfiguration'
 
 const choices = [
   {

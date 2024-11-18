@@ -5,7 +5,7 @@
   "scripts": {
     "dev": "tsx --watch .",
     "build": "tsc",
-    "start": "node dist/index.js"
+    "start": "tsc && node dist/index.js"
   },
   "keywords": [],
   "author": "",
@@ -16,7 +16,8 @@
     "commandkit": "^0.1.10",
     "discord.js": "^14.16.3",
     "dotenv": "^16.4.5",
-    "mongoose": "^8.7.2"
+    "mongoose": "^8.7.2",
+    "puppeteer": "^23.8.0"
   },
   "devDependencies": {
     "@types/node": "^22.7.7",

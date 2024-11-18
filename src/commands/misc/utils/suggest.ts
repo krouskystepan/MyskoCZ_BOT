@@ -9,13 +9,13 @@ import {
   TextInputBuilder,
   TextInputStyle,
 } from 'discord.js'
-import GuildConfiguration from '../../models/GuildConfiguration'
-import Suggestion from '../../models/Suggestion'
-import { formatResults } from '../../utils/formatResult'
+import GuildConfiguration from '../../../models/GuildConfiguration'
+import Suggestion from '../../../models/Suggestion'
+import { formatResults } from '../../../utils/formatResult'
 import { CommandData, CommandOptions, SlashCommandProps } from 'commandkit'
 
 export const data: CommandData = {
-  name: 'navrh',
+  name: 'suggest',
   description: 'Navrhni něco co by mělo být přidáno na server',
   contexts: [0],
 }
@@ -33,7 +33,7 @@ export async function run({ interaction, client, handler }: SlashCommandProps) {
     if (!guildConfiguration?.suggestionChannelIds.length) {
       return await interaction.reply({
         content:
-          'Tento server nebyl ještě nastaven pro používání příkazu `/navrh`. Kontaktujte prosím administrátory serveru.',
+          'Tento server nebyl ještě nastaven pro používání příkazu `/suggest`. Kontaktujte prosím administrátory serveru.',
         ephemeral: true,
       })
     }
@@ -42,7 +42,7 @@ export async function run({ interaction, client, handler }: SlashCommandProps) {
       !guildConfiguration.suggestionChannelIds.includes(interaction.channelId)
     ) {
       return await interaction.reply({
-        content: `Tento kanál není nastaven pro používání příkazu \`/navrh\`. Zkuste jeden z těchto kanálů: ${guildConfiguration.suggestionChannelIds
+        content: `Tento kanál není nastaven pro používání příkazu \`/suggest\`. Zkuste jeden z těchto kanálů: ${guildConfiguration.suggestionChannelIds
           .map((id) => `<#${id}>`)
           .join(', ')}.`,
         ephemeral: true,
@@ -172,6 +172,6 @@ export async function run({ interaction, client, handler }: SlashCommandProps) {
       components: [firstRow, secondRow],
     })
   } catch (error) {
-    console.error('Error in /navrh:', error)
+    console.error('Error in /suggest:', error)
   }
 }
