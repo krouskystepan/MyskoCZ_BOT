@@ -46,5 +46,5 @@ export default async (client: Client) => {
 
   setInterval(async () => {
     await updateChannelNames()
-  }, 1 * 60 * 1000) // Every 15 minutes
+  }, 15 * 60 * 1000) // Every 15 minutes
 }
