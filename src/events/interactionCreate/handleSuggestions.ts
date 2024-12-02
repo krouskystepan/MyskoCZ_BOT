@@ -40,7 +40,7 @@ export default async (interaction: Interaction) => {
         )
       }
 
-      targetSuggestion.status = 'approved'
+      targetSuggestion.status = 'accepted'
       ;(targetMessageEmbed as any).data.color = 0x84e660
       targetMessageEmbed.fields[1].value = '✅ Schváleno'
 

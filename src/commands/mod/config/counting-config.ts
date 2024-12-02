@@ -318,7 +318,9 @@ export async function run({ interaction, client, handler }: SlashCommandProps) {
         ephemeral: true,
       })
     } else {
-      counting.specialNumbers.pull({ number })
+      counting.specialNumbers = counting.specialNumbers.filter(
+        (entry) => entry.number !== number
+      )
     }
 
     await counting.save()
@@ -338,9 +340,9 @@ export async function run({ interaction, client, handler }: SlashCommandProps) {
       })
     }
 
-    const specialNumbers = counting.specialNumbers.map(
-      (specialNumber) => `${specialNumber.number}: ${specialNumber.emoji}`
-    )
+    const specialNumbers = counting.specialNumbers
+      .sort((a, b) => a.number - b.number)
+      .map((specialNumber) => `${specialNumber.number}: ${specialNumber.emoji}`)
 
     return await interaction.reply({
       content: `Speciální čísla s emoji: \n${specialNumbers.join('\n')}`,

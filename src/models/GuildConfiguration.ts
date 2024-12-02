@@ -1,9 +1,17 @@
-import { Schema, model } from 'mongoose'
+import { Schema, model, Document } from 'mongoose'
 
-const guildConfigurationSchema = new Schema({
+export type GuildConfiguration = Document & {
+  guildId: string
+  suggestionChannelIds: string[]
+  gameChannelIds: string[]
+  countingChannelId: string
+}
+
+const guildConfigurationSchema = new Schema<GuildConfiguration>({
   guildId: {
     type: String,
     required: true,
+    unique: true,
   },
   suggestionChannelIds: {
     type: [String],
@@ -19,4 +27,7 @@ const guildConfigurationSchema = new Schema({
   },
 })
 
-export default model('GuildConfiguration', guildConfigurationSchema)
+export default model<GuildConfiguration>(
+  'GuildConfiguration',
+  guildConfigurationSchema
+)

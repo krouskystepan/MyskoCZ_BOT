@@ -1,6 +1,17 @@
-import { Schema, model } from 'mongoose'
+import { Schema, model, Document } from 'mongoose'
 
-const CountingSchema = new Schema({
+export type Counting = Document & {
+  guildId: string
+  count: number
+  lastCounter: string
+  highestCount: number
+  specialNumbers: {
+    number: number
+    emoji: string
+  }[]
+}
+
+const CountingSchema = new Schema<Counting>({
   guildId: { type: String, required: true, unique: true },
   count: { type: Number, default: 0 },
   lastCounter: { type: String, default: '' },
@@ -13,4 +24,4 @@ const CountingSchema = new Schema({
   ],
 })
 
-export default model('Counting', CountingSchema)
+export default model<Counting>('Counting', CountingSchema)
