@@ -4,6 +4,7 @@ import { EmbedBuilder } from 'discord.js'
 export const data: CommandData = {
   name: 'info',
   description: 'Získej informace o botovi, serveru a uptime.',
+  contexts: [0],
 }
 
 export const options: CommandOptions = {

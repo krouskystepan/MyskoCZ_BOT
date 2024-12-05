@@ -11,32 +11,47 @@ export default async (client: Client) => {
       if (!roleCounter) continue
 
       for (const channelData of roleCounter.channels) {
-        const channel = await guild.channels.fetch(channelData.channelId)
+        try {
+          const channel = await guild.channels.fetch(channelData.channelId)
 
-        if (!channel || !channel.isVoiceBased()) continue
-
-        const uniqueUserIds = new Set<string>()
-
-        for (const roleData of channelData.roles) {
-          const role = roles.get(roleData.roleId)
-          if (role) {
-            members.forEach((member) => {
-              if (member.roles.cache.has(role.id)) {
-                uniqueUserIds.add(member.id)
-              }
-            })
+          if (!channel || !channel.isVoiceBased()) {
+            roleCounter.channels = roleCounter.channels.filter(
+              (data) => data.channelId !== channelData.channelId
+            )
+            await roleCounter.save()
+            continue
           }
-        }
 
-        const totalUsers = uniqueUserIds.size
-        const currentName = channel.name
+          const uniqueUserIds = new Set<string>()
 
-        const match = currentName.match(/^(.*?)(?:\s\d+)?$/)
-        const baseName = match ? match[1].trim() : currentName.trim()
-        const newChannelName = `${baseName} ${totalUsers}`.trim()
+          for (const roleData of channelData.roles) {
+            const role = roles.get(roleData.roleId)
+            if (role) {
+              members.forEach((member) => {
+                if (member.roles.cache.has(role.id)) {
+                  uniqueUserIds.add(member.id)
+                }
+              })
+            }
+          }
 
-        if (currentName !== newChannelName) {
-          await channel.setName(newChannelName)
+          const totalUsers = uniqueUserIds.size
+          const currentName = channel.name
+
+          const match = currentName.match(/^(.*?)(?:\s\d+)?$/)
+          const baseName = match ? match[1].trim() : currentName.trim()
+          const newChannelName = `${baseName} ${totalUsers}`.trim()
+
+          if (currentName !== newChannelName) {
+            await channel.setName(newChannelName)
+          }
+        } catch (error) {
+          if (error.code === 10003) {
+            roleCounter.channels = roleCounter.channels.filter(
+              (data) => data.channelId !== channelData.channelId
+            )
+            await roleCounter.save()
+          }
         }
       }
     }

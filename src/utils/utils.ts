@@ -1,6 +1,5 @@
 import mongoose from 'mongoose'
 import GuildConfiguration from '../models/GuildConfiguration'
-import { Document } from 'mongoose'
 
 export const connectToDatabase = async () => {
   try {

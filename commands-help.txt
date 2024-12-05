@@ -6,6 +6,3 @@ BotDM = 1,
 
 Interaction can be used within Group DMs and DMs other than the app's bot user
 PrivateChannel = 2
-
-TODO
-whois command

@@ -3,9 +3,11 @@ import {
   ChannelType,
   CommandInteractionOptionResolver,
   Role,
+  VoiceChannel,
 } from 'discord.js'
 import { CommandData, CommandOptions, SlashCommandProps } from 'commandkit'
 import RoleCounter from '../../../models/RoleCounter'
+import { randomUUID } from 'crypto'
 
 export const data: CommandData = {
   name: 'counter-config',
@@ -17,13 +19,6 @@ export const data: CommandData = {
       description: 'Přidání kanálu pro statistiky.',
       type: ApplicationCommandOptionType.Subcommand,
       options: [
-        {
-          name: 'channel',
-          description: 'Kanál pro statistiky.',
-          type: ApplicationCommandOptionType.Channel,
-          channel_types: [ChannelType.GuildVoice],
-          required: true,
-        },
         {
           name: 'roles',
           description: 'ID role ke sledování (oddělte čárkou).',
@@ -60,17 +55,10 @@ export const options: CommandOptions = {
 }
 
 export async function run({ interaction }: SlashCommandProps) {
-  if (!interaction.guildId) {
-    return interaction.reply({
-      content: 'Tato akce je možná pouze na serveru.',
-      ephemeral: true,
-    })
-  }
-
   const options = interaction.options as CommandInteractionOptionResolver
   const subcommand = options.getSubcommand()
-
   const guild = interaction.guild
+
   if (!guild) {
     return interaction.reply({
       content: 'Nepodařilo se získat informace o serveru.',
@@ -79,7 +67,6 @@ export async function run({ interaction }: SlashCommandProps) {
   }
 
   if (subcommand === 'add') {
-    const channel = options.getChannel('channel', true)
     const rolesInput = options.getString('roles', true)
 
     const roleIds = rolesInput
@@ -105,6 +92,54 @@ export async function run({ interaction }: SlashCommandProps) {
       })
     }
 
+    const members = await guild.members.fetch()
+    const uniqueUserIds = new Set<string>()
+
+    roles.forEach((role) => {
+      members.forEach((member) => {
+        if (member.roles.cache.has(role.id)) {
+          uniqueUserIds.add(member.id)
+        }
+      })
+    })
+
+    const totalUsers = uniqueUserIds.size
+
+    let newChannel: VoiceChannel
+    try {
+      const uuid = randomUUID().split('-')[0]
+      const channelName = `Counter-${uuid} (${totalUsers})`
+
+      newChannel = await guild.channels.create({
+        name: channelName,
+        type: ChannelType.GuildVoice,
+        permissionOverwrites: [
+          {
+            id: guild.roles.everyone.id,
+            deny: ['Connect'],
+          },
+          {
+            id: interaction.client.user?.id,
+            allow: ['ManageChannels', 'ViewChannel'],
+          },
+        ],
+      })
+    } catch (error) {
+      console.error('Failed to create channel:', error)
+      return interaction.reply({
+        content:
+          'Došlo k chybě při vytváření kanálu. Zkontrolujte oprávnění bota.',
+        ephemeral: true,
+      })
+    }
+
+    if (!newChannel) {
+      return interaction.reply({
+        content: 'Nepodařilo se vytvořit kanál.',
+        ephemeral: true,
+      })
+    }
+
     let roleCounter = await RoleCounter.findOne({
       guildId: interaction.guildId,
     })
@@ -115,26 +150,17 @@ export async function run({ interaction }: SlashCommandProps) {
       })
     }
 
-    const channelEntry = roleCounter.channels.find(
-      (ch) => ch.channelId === channel.id
-    )
-
-    if (channelEntry) {
-      return interaction.reply({
-        content: `Kanál ${channel} už je nastaven pro sledování statistik.`,
-        ephemeral: true,
-      })
-    }
-
     roleCounter.channels.push({
-      channelId: channel.id,
-      roles: roles.map((role) => ({ roleId: role.id, count: 0 })),
+      channelId: newChannel.id,
+      roles: roles.map((role) => ({ roleId: role.id })),
     })
 
     await roleCounter.save()
 
     return interaction.reply({
-      content: `Kanál ${channel} byl nastaven pro sledování rolí: ${roles
+      content: `Kanál "${
+        newChannel.name
+      }" byl vytvořen pro sledování rolí: ${roles
         .map((role) => role.toString())
         .join(', ')}.`,
     })
@@ -142,6 +168,15 @@ export async function run({ interaction }: SlashCommandProps) {
 
   if (subcommand === 'delete') {
     const channelId = options.getString('channel', true)
+    console.log(`[CounterConfig] Deleting channel with ID: ${channelId}`)
+
+    const channel = await guild.channels.fetch(channelId).catch(() => null)
+    if (!channel) {
+      return interaction.reply({
+        content: 'Kanál neexistuje nebo již byl odstraněn.',
+        ephemeral: true,
+      })
+    }
 
     let roleCounter = await RoleCounter.findOne({
       guildId: interaction.guildId,
@@ -153,21 +188,13 @@ export async function run({ interaction }: SlashCommandProps) {
       })
     }
 
-    const channelIndex = roleCounter.channels.findIndex(
-      (ch) => ch.channelId === channelId
+    roleCounter.channels = roleCounter.channels.filter(
+      (ch) => ch.channelId !== channelId
     )
-    if (channelIndex === -1) {
-      return interaction.reply({
-        content: 'Kanál nebyl nalezen.',
-        ephemeral: true,
-      })
-    }
-
-    roleCounter.channels.splice(channelIndex, 1)
     await roleCounter.save()
 
     return interaction.reply({
-      content: `Kanál s ID ${channelId} byl úspěšně smazán.`,
+      content: `Kanál "${channel.name}" byl úspěšně smazán.`,
     })
   }
 
@@ -196,9 +223,7 @@ export async function run({ interaction }: SlashCommandProps) {
           })
         })
 
-        const roles = ch.roles
-          .map((r) => `<@&${r.roleId}> (${r.roleId})`)
-          .join(', ')
+        const roles = ch.roles.map((r) => `<@&${r.roleId}>`).join(', ')
         return `Kanál: <#${ch.channelId}> (${ch.channelId})\nRole: ${roles}\nPočet unikátních uživatelů: ${uniqueMembers.size}`
       })
       .join('\n\n')
