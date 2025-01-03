@@ -4,11 +4,34 @@ import RoleCounter from '../../models/RoleCounter'
 export default async (client: Client) => {
   const cachedMembers = new Map<string, Collection<string, GuildMember>>()
 
+  const fetchMembersWithRetry = async (
+    guild: any,
+    retries = 3
+  ): Promise<Collection<string, GuildMember>> => {
+    let lastError: any
+
+    for (let i = 0; i < retries; i++) {
+      try {
+        return await guild.members.fetch()
+      } catch (error) {
+        lastError = error
+        console.warn(
+          `Retrying member fetch for guild ${guild.id} (${i + 1}/${retries})...`
+        )
+        await new Promise((resolve) => setTimeout(resolve, 1000))
+      }
+    }
+
+    throw (
+      lastError || new Error(`Failed to fetch members for guild ${guild.id}`)
+    )
+  }
+
   const updateChannelNames = async () => {
     for (const guild of client.guilds.cache.values()) {
       try {
         const members =
-          cachedMembers.get(guild.id) || (await guild.members.fetch())
+          cachedMembers.get(guild.id) || (await fetchMembersWithRetry(guild))
         cachedMembers.set(guild.id, members)
 
         setTimeout(() => cachedMembers.delete(guild.id), 15 * 60 * 1000)
