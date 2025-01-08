@@ -27,7 +27,6 @@ const suggestionSchema = new Schema<Suggestion>(
     guildId: {
       type: String,
       required: true,
-      unique: true,
     },
     messageId: {
       type: String,

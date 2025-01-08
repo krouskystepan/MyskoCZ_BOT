@@ -85,7 +85,6 @@ export async function run({ interaction }: SlashCommandProps) {
     )
     .setThumbnail(user.displayAvatarURL({ extension: 'png', size: 1024 }))
     .setTimestamp()
-    .setFooter({ text: 'Informace vygenerovány botem' })
 
   return interaction.reply({
     embeds: [embed],

@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "main": "src/index.ts",
   "scripts": {
-    "dev": "tsx --watch .",
+    "dev": "tsx --watch --no-deprecation .",
     "build": "tsc",
     "start": "tsc && node dist/index.js"
   },

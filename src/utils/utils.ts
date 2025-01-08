@@ -25,3 +25,39 @@ export const checkGuildConfiguration = async (guildId: string) => {
 
   return guildConfiguration
 }
+
+export function parseTimeToSeconds(time: string): number {
+  const regex = /(\d+)([smhd])/gi
+  let totalSeconds = 0
+
+  const matches = time.match(regex)
+
+  if (!matches) {
+    throw new Error(
+      'Invalid time format. Use a format like "5s", "2m", "7h", or "90d".'
+    )
+  }
+
+  matches.forEach((match) => {
+    const value = parseInt(match.slice(0, -1), 10)
+    const unit = match.slice(-1).toLowerCase()
+
+    switch (unit) {
+      case 's': // Seconds
+        totalSeconds += value
+        break
+      case 'm': // Minutes
+        totalSeconds += value * 60
+        break
+      case 'h': // Hours
+        totalSeconds += value * 60 * 60
+        break
+      case 'd': // Days
+        totalSeconds += value * 60 * 60 * 24
+        break
+      default:
+        throw new Error('Unknown time unit. Use "s", "m", "h", or "d".')
+    }
+  })
+  return totalSeconds
+}

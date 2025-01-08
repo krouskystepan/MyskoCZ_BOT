@@ -4,6 +4,7 @@ import {
   ButtonStyle,
   EmbedBuilder,
   Message,
+  MessageFlags,
   ModalBuilder,
   TextChannel,
   TextInputBuilder,
@@ -84,7 +85,7 @@ export async function run({ interaction, client, handler }: SlashCommandProps) {
     if (!modalInteraction) return
 
     await modalInteraction.deferReply({
-      ephemeral: true,
+      flags: MessageFlags.Ephemeral,
     })
 
     let suggestionMessage: Message<true>

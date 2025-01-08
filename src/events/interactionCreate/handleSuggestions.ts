@@ -1,4 +1,4 @@
-import { Interaction } from 'discord.js'
+import { Interaction, MessageFlags } from 'discord.js'
 import Suggestion from '../../models/Suggestion'
 import { formatResults } from '../../utils/formatResult'
 
@@ -12,7 +12,7 @@ export default async (interaction: Interaction) => {
     if (type !== 'suggestion') return
 
     await interaction.deferReply({
-      ephemeral: true,
+      flags: MessageFlags.Ephemeral,
     })
 
     const targetSuggestion = await Suggestion.findOne({
