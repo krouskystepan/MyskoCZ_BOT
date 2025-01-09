@@ -1,6 +1,9 @@
 import { Client, TextChannel } from 'discord.js'
 import Giveaway from '../../models/Giveaway'
-import { createGiveawayEmbed } from '../../utils/giveawayEmbed'
+import {
+  createGiveawayEmbed,
+  createGiveawayWinnerMessage,
+} from '../../models/temp/giveawayResponses'
 
 export default async (client: Client) => {
   const giveaways = await Giveaway.find({ status: 'active' })
@@ -46,9 +49,18 @@ export default async (client: Client) => {
               true
             )
 
+            const winnerMessage = createGiveawayWinnerMessage(
+              updatedGiveaway.prize,
+              updatedGiveaway.actualWinners
+            )
+
             await message.edit({
               embeds: [updatedEmbed],
               components: [],
+            })
+
+            await message.reply({
+              content: winnerMessage,
             })
           }
         } catch (error) {
@@ -95,9 +107,18 @@ export default async (client: Client) => {
                 true
               )
 
+              const winnerMessage = createGiveawayWinnerMessage(
+                refreshedGiveaway.prize,
+                refreshedGiveaway.actualWinners
+              )
+
               await message.edit({
                 embeds: [updatedEmbed],
                 components: [],
+              })
+
+              await message.reply({
+                content: winnerMessage,
               })
             }
           } catch (error) {

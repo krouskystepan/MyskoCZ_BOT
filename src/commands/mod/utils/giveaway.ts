@@ -12,7 +12,10 @@ import {
 } from 'discord.js'
 import Giveaway from '../../../models/Giveaway'
 import { parseTimeToSeconds } from '../../../utils/utils'
-import { createGiveawayEmbed } from '../../../utils/giveawayEmbed'
+import {
+  createGiveawayEmbed,
+  createGiveawayWinnerMessage,
+} from '../../../models/temp/giveawayResponses'
 
 export const data: CommandData = {
   name: 'giveaway',
@@ -64,12 +67,37 @@ export const data: CommandData = {
         },
       ],
     },
+    {
+      name: 'reroll',
+      description: 'Znovu vybere vítěze giveawaye.',
+      type: ApplicationCommandOptionType.Subcommand,
+      options: [
+        {
+          name: 'giveaway-id',
+          description: 'ID giveawaye, který chcete znovu vylosovat.',
+          type: ApplicationCommandOptionType.String,
+          required: true,
+        },
+        {
+          name: 'protect-winners',
+          description:
+            'Zde zadejte ID hráčů, které CHCETE "ochránit" před novým losem např. id1, id2, id3.',
+          type: ApplicationCommandOptionType.String,
+          required: false,
+        },
+      ],
+    },
   ],
 }
 
 /*
-check minimum duration, edit dates, reply to first embed with win message
-add reroll, end, delete
+check minimum duration time OK
+edit dates OK
+reply to first embed with win message OK
+add 
+  reroll
+  end
+  delete
 */
 
 export const options: CommandOptions = {
@@ -189,6 +217,8 @@ export async function run({ interaction }: SlashCommandProps) {
             true
           )
 
+          const winnerMessage = createGiveawayWinnerMessage(prize, winners)
+
           const channel = interaction.guild?.channels.cache.get(
             giveaway.channelId
           ) as TextChannel
@@ -197,9 +227,13 @@ export async function run({ interaction }: SlashCommandProps) {
           const message = await channel.messages.fetch(giveawayMessage.id)
           if (!message) return
 
-          return await message.edit({
+          await message.edit({
             embeds: [updatedEmbed],
             components: [],
+          })
+
+          return await giveawayMessage.reply({
+            content: winnerMessage,
           })
         }, duration * 1000)
       } catch (error) {
@@ -209,6 +243,35 @@ export async function run({ interaction }: SlashCommandProps) {
           flags: MessageFlags.Ephemeral,
         })
       }
+    }
+
+    if (subcommand === 'reroll') {
+      const messageId = options.getString('giveaway-id', true)
+      const protectedWinners = options.getString('protect-winners')
+
+      const giveaway = await Giveaway.findOne({
+        messageId,
+        status: 'ended',
+      })
+
+      if (!giveaway) {
+        return await interaction.reply({
+          content: 'Giveaway s tímto ID nebyl nalezen.',
+          flags: MessageFlags.Ephemeral,
+        })
+      }
+
+      const winners = giveaway.players
+        .sort(() => 0.5 - Math.random())
+        .filter((w) => !protectedWinners?.split(',').includes(w))
+        .slice(0, giveaway.numberOfWinners)
+
+      interaction.reply({
+        content: `Giveaway byla úspěšně znovu vylosována! Výherci: ${winners
+          .map((w) => `<@${w}>`)
+          .join(', ')}`,
+        flags: MessageFlags.Ephemeral,
+      })
     }
 
     if (subcommand === 'list') {
@@ -235,9 +298,9 @@ export async function run({ interaction }: SlashCommandProps) {
         .setDescription(
           paginatedGiveaways
             .map((giveaway, index) => {
-              return `**${(page - 1) * pageSize + index + 1}.\nCena: ${
+              return `**ID:** ${giveaway._id}\n**Cena:** ${
                 giveaway.prize
-              }**\n**Vytvořil:** <@${
+              }\n**Vytvořil:** <@${
                 giveaway.authorId
               }>\n**Uskutečněna:** <t:${Math.floor(
                 giveaway.endTime.getTime() / 1000
@@ -264,8 +327,9 @@ export async function run({ interaction }: SlashCommandProps) {
       })
     }
   } catch (error) {
+    console.log(error)
     return await interaction.reply({
-      content: 'Něco se pokazilo.',
+      content: `Něco se pokazilo.`,
       flags: MessageFlags.Ephemeral,
     })
   }

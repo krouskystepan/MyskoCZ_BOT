@@ -21,8 +21,8 @@ async function startApp(client: Client) {
     commandsPath: path.join(__dirname, 'commands'),
     eventsPath: path.join(__dirname, 'events'),
     // validationsPath: path.join(__dirname, 'validations'),
-    devGuildIds: ['1298805664654561340'],
-    devUserIds: ['563799503056928768'],
+    // devGuildIds: ['1298805664654561340'],
+    // devUserIds: ['563799503056928768'],
     // devRoleIds: [],
     bulkRegister: false,
   })

@@ -12,6 +12,7 @@ export const createGiveawayEmbed = (
 ) => {
   return new EmbedBuilder()
     .setTitle(`${name}${ended ? ' - Giveaway skončila!' : ''}`)
+    .setColor(ended ? (winners.length <= 0 ? 0xe74c3c : 0x2ecc71) : 0x3498db)
     .setDescription(
       `${
         ended
@@ -52,4 +53,17 @@ export const createGiveawayEmbed = (
       }
     )
     .setTimestamp()
+}
+
+export const createGiveawayWinnerMessage = (
+  name: string,
+  winners: string[]
+) => {
+  if (winners.length === 0) {
+    return `🎉 Giveaway ${name} skončila! 🎉\nBohužel se nepodařilo vybrat výherce! ❌`
+  }
+
+  return `🎉 Giveaway ${name} skončila! 🎉\nGratulujeme výhercům! 🎉\n${winners
+    .map((w) => `<@${w}>`)
+    .join(', ')}`
 }
