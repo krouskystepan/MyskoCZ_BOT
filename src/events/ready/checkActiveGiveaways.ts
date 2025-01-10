@@ -46,7 +46,7 @@ export default async (client: Client) => {
               updatedGiveaway.players.length,
               endTime,
               winners,
-              true
+              'ended'
             )
 
             const winnerMessage = createGiveawayWinnerMessage(
@@ -104,7 +104,7 @@ export default async (client: Client) => {
                 refreshedGiveaway.players.length,
                 endTime,
                 refreshedGiveaway.actualWinners,
-                true
+                'ended'
               )
 
               const winnerMessage = createGiveawayWinnerMessage(

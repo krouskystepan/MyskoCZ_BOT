@@ -14,7 +14,7 @@ export type Giveaway = Document & {
   actualWinners: string[]
   prize: string
   endTime: Date
-  status: 'active' | 'ended' | 'cancelled'
+  status: 'active' | 'ended' | 'prematurely_ended' | 'cancelled'
   // excludedPlayers?: string[]
 }
 
@@ -46,7 +46,7 @@ const GiveawaySchema = new Schema<Giveaway>({
   endTime: { type: Date, required: true },
   status: {
     type: String,
-    enum: ['active', 'ended', 'cancelled'],
+    enum: ['active', 'ended', 'prematurely_ended', 'cancelled'],
     default: 'active',
   },
   // excludedPlayers: { type: [String], required: false, default: [] },

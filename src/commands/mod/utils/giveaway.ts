@@ -15,6 +15,7 @@ import { parseTimeToSeconds } from '../../../utils/utils'
 import {
   createGiveawayEmbed,
   createGiveawayWinnerMessage,
+  giveawayStatusMap,
 } from '../../../utils/giveawayResponses'
 
 export const data: CommandData = {
@@ -87,30 +88,42 @@ export const data: CommandData = {
         },
       ],
     },
+    {
+      name: 'end',
+      description: 'Ukončí giveaway předčasně.',
+      type: ApplicationCommandOptionType.Subcommand,
+      options: [
+        {
+          name: 'giveaway-id',
+          description: 'ID giveawaye, kterou chcete ukončit.',
+          type: ApplicationCommandOptionType.String,
+          required: true,
+        },
+      ],
+    },
+    {
+      name: 'delete',
+      description: 'Smazání giveawaye',
+      type: ApplicationCommandOptionType.Subcommand,
+      options: [
+        {
+          name: 'giveaway-id',
+          description: 'ID giveawaye, který chcete smazat.',
+          type: ApplicationCommandOptionType.String,
+          required: true,
+        },
+      ],
+    },
   ],
 }
-
-/*
-check minimum duration time OK
-edit dates OK
-reply to first embed with win message OK
-add 
-  reroll
-  end
-  delete
-*/
-
-/*
-do not win twice when rerolling
-when 0 winners throw error
-to the list add name
-*/
 
 export const options: CommandOptions = {
   userPermissions: ['Administrator'],
   botPermissions: ['Administrator'],
   deleted: false,
 }
+
+// cancel giveaway
 
 export async function run({ interaction }: SlashCommandProps) {
   const options = interaction.options as CommandInteractionOptionResolver
@@ -132,6 +145,13 @@ export async function run({ interaction }: SlashCommandProps) {
         })
       }
 
+      if (numberOfWinners < 1) {
+        return interaction.reply({
+          content: 'Počet vítězů musí být alespoň 1.',
+          flags: MessageFlags.Ephemeral,
+        })
+      }
+
       const endTime = new Date(Date.now() + duration * 1000)
 
       const embed = createGiveawayEmbed(
@@ -140,7 +160,9 @@ export async function run({ interaction }: SlashCommandProps) {
         prize,
         numberOfWinners,
         0,
-        endTime
+        endTime,
+        [],
+        'active'
       )
 
       await interaction.deferReply({
@@ -220,7 +242,7 @@ export async function run({ interaction }: SlashCommandProps) {
             giveaway.players.length,
             endTime,
             winners,
-            true
+            'ended'
           )
 
           const winnerMessage = createGiveawayWinnerMessage(prize, winners)
@@ -267,15 +289,110 @@ export async function run({ interaction }: SlashCommandProps) {
         })
       }
 
-      const winners = giveaway.players
-        .sort(() => 0.5 - Math.random())
-        .filter((w) => !protectedWinners?.split(',').includes(w))
-        .slice(0, giveaway.numberOfWinners)
+      const protectedList = [
+        ...(protectedWinners ? protectedWinners.split(',') : []),
+      ]
 
-      await interaction.reply({
-        content: `Giveaway byla úspěšně znovu vylosována! Výherci: ${winners
-          .map((w) => `<@${w}>`)
-          .join(', ')}`,
+      const validProtected = protectedList.filter((id) =>
+        giveaway.actualWinners.includes(id.trim())
+      )
+
+      const invalidProtected = protectedList.filter(
+        (id) => !giveaway.actualWinners.includes(id.trim())
+      )
+
+      if (invalidProtected.length > 0) {
+        return await interaction.reply({
+          content: `Někteří chránění uživatelé nejsou původními výherci giveawaye: ${invalidProtected
+            .map((id) => `<@${id.trim()}>`)
+            .join(', ')}.`,
+          flags: MessageFlags.Ephemeral,
+        })
+      }
+
+      const allProtected = giveaway.actualWinners.every((winner) =>
+        validProtected.includes(winner)
+      )
+
+      if (allProtected) {
+        return await interaction.reply({
+          content:
+            'Nelze znovu losovat, protože všichni výherci jsou chráněni.',
+          flags: MessageFlags.Ephemeral,
+        })
+      }
+
+      const previousWinners = new Set(giveaway.actualWinners || [])
+      const playersToReroll = giveaway.players.filter(
+        (player) =>
+          !validProtected.includes(player) && !previousWinners.has(player)
+      )
+
+      const shuffledPlayers = playersToReroll.sort(() => 0.5 - Math.random())
+
+      const winnersNeeded = giveaway.numberOfWinners - validProtected.length
+
+      if (winnersNeeded < 0) {
+        return await interaction.reply({
+          content: `Počet chráněných výherců přesahuje počet výherců (${giveaway.numberOfWinners}).`,
+          flags: MessageFlags.Ephemeral,
+        })
+      }
+
+      const newWinners = shuffledPlayers.slice(0, winnersNeeded)
+
+      const finalWinners = [...validProtected, ...newWinners]
+
+      giveaway.actualWinners = finalWinners
+      await giveaway.save()
+
+      const channel = interaction.guild?.channels.cache.get(
+        giveaway.channelId
+      ) as TextChannel
+
+      if (!channel) {
+        return await interaction.reply({
+          content: 'Channel nebyl nalezen.',
+          flags: MessageFlags.Ephemeral,
+        })
+      }
+
+      const message = await channel.messages.fetch(messageId)
+
+      if (!message) {
+        return await interaction.reply({
+          content: 'Giveaway message nebyla nalezena.',
+          flags: MessageFlags.Ephemeral,
+        })
+      }
+
+      const updatedEmbed = createGiveawayEmbed(
+        giveaway.name,
+        giveaway.authorId,
+        giveaway.prize,
+        giveaway.numberOfWinners,
+        giveaway.players.length,
+        giveaway.endTime,
+        finalWinners,
+        'ended'
+      )
+
+      const winnerMessage = createGiveawayWinnerMessage(
+        giveaway.prize,
+        finalWinners,
+        'rerolled'
+      )
+
+      await message.edit({
+        embeds: [updatedEmbed],
+      })
+
+      await message.reply({
+        content: winnerMessage,
+      })
+
+      return await interaction.reply({
+        content: 'Giveaway byla úspěšně znovu losována.',
         flags: MessageFlags.Ephemeral,
       })
     }
@@ -303,26 +420,25 @@ export async function run({ interaction }: SlashCommandProps) {
         .setTitle('Giveaway List')
         .setDescription(
           paginatedGiveaways
-            .map((giveaway, index) => {
-              return `**ID:** ${giveaway._id}\n**Cena:** ${
-                giveaway.prize
-              }\n**Vytvořil:** <@${
-                giveaway.authorId
-              }>\n**Uskutečněna:** <t:${Math.floor(
-                giveaway.endTime.getTime() / 1000
-              )}:D>\n**Stav:** ${
-                giveaway.status === 'active'
-                  ? 'Probíhá'
-                  : giveaway.status === 'ended'
-                  ? 'Ukončena'
-                  : 'Zrušena'
-              }\n**Výherce:** ${
+            .map((giveaway) => {
+              const winnerList =
                 giveaway.actualWinners.length > 0
                   ? giveaway.actualWinners.map((w) => `<@${w}>`).join(', ')
                   : 'Žádní výherci'
-              }\n`
+
+              const status =
+                giveawayStatusMap[giveaway.status] || 'Neznámý stav'
+
+              return `
+**ID:** ${giveaway._id}
+**Jméno:** ${giveaway.name}
+**Cena:** ${giveaway.prize}
+**Vytvořil:** <@${giveaway.authorId}>
+**Uskutečněna:** <t:${Math.floor(giveaway.endTime.getTime() / 1000)}:D>
+**Stav:** ${status}
+**Výherce:** ${winnerList}`
             })
-            .join('\n')
+            .join('\n\n')
         )
         .setFooter({
           text: `Stránka ${page}/${Math.ceil(giveaways.length / pageSize)}`,
@@ -330,6 +446,106 @@ export async function run({ interaction }: SlashCommandProps) {
 
       return interaction.reply({
         embeds: [embed],
+      })
+    }
+
+    if (subcommand === 'end') {
+      const messageId = options.getString('giveaway-id', true)
+
+      const giveaway = await Giveaway.findOne({
+        messageId,
+        status: 'active',
+      })
+
+      if (!giveaway) {
+        return await interaction.reply({
+          content: 'Giveaway s tímto ID nebyla nalezena.',
+          flags: MessageFlags.Ephemeral,
+        })
+      }
+
+      giveaway.status = 'prematurely_ended'
+
+      const shuffledPlayers = giveaway.players.sort(() => 0.5 - Math.random())
+      const winners = shuffledPlayers.slice(0, giveaway.numberOfWinners)
+
+      giveaway.actualWinners = winners
+      await giveaway.save()
+
+      const channel = interaction.guild?.channels.cache.get(
+        giveaway.channelId
+      ) as TextChannel
+
+      if (!channel) {
+        return await interaction.reply({
+          content: 'Channel nebyl nalezen.',
+          flags: MessageFlags.Ephemeral,
+        })
+      }
+
+      const message = await channel.messages.fetch(giveaway.messageId)
+
+      if (!message) {
+        return await interaction.reply({
+          content: 'Giveaway message nebyla nalezena.',
+          flags: MessageFlags.Ephemeral,
+        })
+      }
+
+      const updatedEmbed = createGiveawayEmbed(
+        giveaway.name,
+        giveaway.authorId,
+        giveaway.prize,
+        giveaway.numberOfWinners,
+        giveaway.players.length,
+        giveaway.endTime,
+        giveaway.actualWinners,
+        'prematurely_ended'
+      )
+
+      const winnerMessage = createGiveawayWinnerMessage(
+        giveaway.prize,
+        giveaway.actualWinners,
+        'prematurely_ended'
+      )
+
+      await message.edit({
+        embeds: [updatedEmbed],
+        components: [],
+      })
+
+      return await interaction.reply({
+        content: winnerMessage,
+      })
+    }
+
+    if (subcommand === 'delete') {
+      const messageId = options.getString('giveaway-id', true)
+
+      const giveaway = await Giveaway.findOne({
+        messageId,
+      })
+
+      if (!giveaway) {
+        return await interaction.reply({
+          content: 'Giveaway s tímto ID nebyla nalezena.',
+          flags: MessageFlags.Ephemeral,
+        })
+      }
+
+      if (giveaway.status === 'active') {
+        return await interaction.reply({
+          content: 'Nelze smazat aktivní giveaway.',
+          flags: MessageFlags.Ephemeral,
+        })
+      }
+
+      giveaway.status = 'cancelled'
+      await giveaway.save()
+
+      interaction.reply({
+        content: 'Giveaway byla úspěšně smazána.',
+        flags: MessageFlags.Ephemeral,
       })
     }
   } catch (error) {
