@@ -90,10 +90,6 @@ export const createGiveawayWinnerMessage = (
   winners: string[],
   status: 'ended' | 'prematurely_ended' | 'rerolled' | 'cancelled' = 'ended'
 ) => {
-  if (winners.length === 0 && status !== 'prematurely_ended') {
-    return `🎉 Giveaway ${name} skončila! 🎉\nBohužel se nepodařilo vybrat výherce! ❌`
-  }
-
   const winnersAsText = winners.map((w) => `<@${w}>`).join(', ')
 
   switch (status) {
@@ -111,6 +107,10 @@ export const createGiveawayWinnerMessage = (
       }
 
     case 'ended':
-      return `🎉 Giveaway ${name} skončila! 🎉\nGratulujeme výhercům! 🎉\n${winnersAsText}`
+      if (winners.length === 0) {
+        return `🎉 Giveaway ${name} skončila! 🎉\nBohužel se nepodařilo vybrat výherce! ❌`
+      } else {
+        return `🎉 Giveaway ${name} skončila! 🎉\nGratulujeme výhercům! 🎉\n${winnersAsText}`
+      }
   }
 }

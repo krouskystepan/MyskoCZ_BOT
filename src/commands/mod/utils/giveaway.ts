@@ -25,7 +25,7 @@ export const data: CommandData = {
   options: [
     {
       name: 'create',
-      description: 'Vytvoří nový giveaway.',
+      description: 'Vytvoří novou giveaway.',
       type: ApplicationCommandOptionType.Subcommand,
       options: [
         {
@@ -75,7 +75,7 @@ export const data: CommandData = {
       options: [
         {
           name: 'giveaway-id',
-          description: 'ID giveawaye, který chcete znovu vylosovat.',
+          description: 'ID giveawaye, kterou chcete znovu vylosovat.',
           type: ApplicationCommandOptionType.String,
           required: true,
         },
@@ -108,7 +108,20 @@ export const data: CommandData = {
       options: [
         {
           name: 'giveaway-id',
-          description: 'ID giveawaye, který chcete smazat.',
+          description: 'ID giveawaye, kterou chcete smazat.',
+          type: ApplicationCommandOptionType.String,
+          required: true,
+        },
+      ],
+    },
+    {
+      name: 'cancel',
+      description: 'Zruší giveaway.',
+      type: ApplicationCommandOptionType.Subcommand,
+      options: [
+        {
+          name: 'giveaway-id',
+          description: 'ID giveawaye, kterou chcete zrušit.',
           type: ApplicationCommandOptionType.String,
           required: true,
         },
@@ -540,11 +553,80 @@ export async function run({ interaction }: SlashCommandProps) {
         })
       }
 
+      await giveaway.deleteOne()
+
+      return await interaction.reply({
+        content: 'Giveaway byla úspěšně smazána.',
+        flags: MessageFlags.Ephemeral,
+      })
+    }
+
+    if (subcommand === 'cancel') {
+      const messageId = options.getString('giveaway-id', true)
+
+      const giveaway = await Giveaway.findOne({
+        messageId,
+        status: 'active',
+      })
+
+      if (!giveaway) {
+        return await interaction.reply({
+          content: 'Giveaway s tímto ID nebyla nalezena.',
+          flags: MessageFlags.Ephemeral,
+        })
+      }
+
       giveaway.status = 'cancelled'
       await giveaway.save()
 
-      interaction.reply({
-        content: 'Giveaway byla úspěšně smazána.',
+      const channel = interaction.guild?.channels.cache.get(
+        giveaway.channelId
+      ) as TextChannel
+
+      if (!channel) {
+        return await interaction.reply({
+          content: 'Channel nebyl nalezen.',
+          flags: MessageFlags.Ephemeral,
+        })
+      }
+
+      const message = await channel.messages.fetch(messageId)
+
+      if (!message) {
+        return await interaction.reply({
+          content: 'Giveaway message nebyla nalezena.',
+          flags: MessageFlags.Ephemeral,
+        })
+      }
+
+      const updatedEmbed = createGiveawayEmbed(
+        giveaway.name,
+        giveaway.authorId,
+        giveaway.prize,
+        giveaway.numberOfWinners,
+        giveaway.players.length,
+        giveaway.endTime,
+        [],
+        'cancelled'
+      )
+
+      const winnerMessage = createGiveawayWinnerMessage(
+        giveaway.prize,
+        [],
+        'cancelled'
+      )
+
+      await message.edit({
+        embeds: [updatedEmbed],
+        components: [],
+      })
+
+      await message.reply({
+        content: winnerMessage,
+      })
+
+      return await interaction.reply({
+        content: 'Giveaway byla úspěšně zrušena.',
         flags: MessageFlags.Ephemeral,
       })
     }
