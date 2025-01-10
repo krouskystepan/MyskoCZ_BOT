@@ -15,7 +15,7 @@ import { parseTimeToSeconds } from '../../../utils/utils'
 import {
   createGiveawayEmbed,
   createGiveawayWinnerMessage,
-} from '../../../models/temp/giveawayResponses'
+} from '../../../utils/giveawayResponses'
 
 export const data: CommandData = {
   name: 'giveaway',
@@ -98,6 +98,12 @@ add
   reroll
   end
   delete
+*/
+
+/*
+do not win twice when rerolling
+when 0 winners throw error
+to the list add name
 */
 
 export const options: CommandOptions = {
@@ -266,7 +272,7 @@ export async function run({ interaction }: SlashCommandProps) {
         .filter((w) => !protectedWinners?.split(',').includes(w))
         .slice(0, giveaway.numberOfWinners)
 
-      interaction.reply({
+      await interaction.reply({
         content: `Giveaway byla úspěšně znovu vylosována! Výherci: ${winners
           .map((w) => `<@${w}>`)
           .join(', ')}`,

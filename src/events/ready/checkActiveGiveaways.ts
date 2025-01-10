@@ -3,7 +3,7 @@ import Giveaway from '../../models/Giveaway'
 import {
   createGiveawayEmbed,
   createGiveawayWinnerMessage,
-} from '../../models/temp/giveawayResponses'
+} from '../../utils/giveawayResponses'
 
 export default async (client: Client) => {
   const giveaways = await Giveaway.find({ status: 'active' })
