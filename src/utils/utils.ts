@@ -3,7 +3,6 @@ import GuildConfiguration from '../models/GuildConfiguration'
 
 export const connectToDatabase = async () => {
   try {
-    console.log('⏳ Connecting to the database...')
     if (!process.env.MONGO_URI) throw new Error('MONGO_URI is not defined')
     mongoose.set('strictQuery', false)
     await mongoose.connect(process.env.MONGO_URI)

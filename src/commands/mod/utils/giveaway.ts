@@ -127,6 +127,25 @@ export const data: CommandData = {
         },
       ],
     },
+    {
+      name: 'test',
+      description: 'Testuje giveaway a okamžitě ji ukončí.',
+      type: ApplicationCommandOptionType.Subcommand,
+      options: [
+        {
+          name: 'winners',
+          description: 'Počet vítězů giveawaye.',
+          type: ApplicationCommandOptionType.Integer,
+          required: true,
+        },
+        {
+          name: 'players',
+          description: 'Počet hráčů, kteří se zúčastnili giveawaye.',
+          type: ApplicationCommandOptionType.Integer,
+          required: true,
+        },
+      ],
+    },
   ],
 }
 
@@ -627,6 +646,82 @@ export async function run({ interaction }: SlashCommandProps) {
 
       return await interaction.reply({
         content: 'Giveaway byla úspěšně zrušena.',
+        flags: MessageFlags.Ephemeral,
+      })
+    }
+
+    if (subcommand === 'test') {
+      const createdBy = interaction.user.id
+      const numberOfWinners = options.getInteger('winners', true)
+      const numberOfPlayers = options.getInteger('players', true)
+
+      const name = 'Testovací giveaway'
+      const prize = 'Testovací cena'
+
+      if (numberOfWinners < 1) {
+        return interaction.reply({
+          content: 'Počet vítězů musí být alespoň 1.',
+          flags: MessageFlags.Ephemeral,
+        })
+      }
+
+      if (numberOfWinners > numberOfPlayers) {
+        return interaction.reply({
+          content: 'Počet vítězů nemůže být větší než počet hráčů.',
+          flags: MessageFlags.Ephemeral,
+        })
+      }
+
+      const embed = createGiveawayEmbed(
+        name,
+        createdBy,
+        prize,
+        numberOfWinners,
+        0,
+        new Date(),
+        [],
+        'ended'
+      )
+
+      await interaction.deferReply({
+        flags: MessageFlags.Ephemeral,
+      })
+
+      const giveawayMessage = await (interaction.channel as TextChannel).send({
+        embeds: [embed],
+      })
+
+      const simulatedPlayers = Array.from(
+        { length: numberOfPlayers },
+        (_, i) => `user${i + 1}`
+      )
+      const winners = simulatedPlayers
+        .sort(() => Math.random() - 0.5)
+        .slice(0, numberOfWinners)
+
+      const winnerMessage = createGiveawayWinnerMessage(prize, winners)
+
+      await giveawayMessage.edit({
+        embeds: [
+          createGiveawayEmbed(
+            name,
+            createdBy,
+            prize,
+            numberOfWinners,
+            simulatedPlayers.length,
+            new Date(),
+            winners,
+            'ended'
+          ),
+        ],
+      })
+
+      await giveawayMessage.reply({
+        content: winnerMessage,
+      })
+
+      return interaction.followUp({
+        content: 'Test giveawaye bylo úspěšně dokončeno.',
         flags: MessageFlags.Ephemeral,
       })
     }
